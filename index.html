@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E7EAE4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1215" media="(prefers-color-scheme: dark)">
+<title>Investigatoren-Akte</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Limelight&display=swap" rel="stylesheet">
+<style>
+/* Layout: Akten-Werkbank — Schrittleiste links, Arbeitsfläche Mitte, laufender Bogen rechts */
+:root{
+  --bg:#E7EAE4; --surface:#F5F6F2; --sunk:#DDE3DD; --ink:#1A2130; --muted:#586170; --line:#C3C9C0;
+  --accent:#2A665E; --accent-ink:#F3F7F5; --accent-soft:#D3E2DD; --blood:#8C2D2A; --ok:#2E6A3B;
+  --display:"Limelight","Didot","Bodoni 72",Georgia,serif;
+  --head:"Cormorant Garamond","Garamond","Times New Roman",serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1215; --surface:#161C20; --sunk:#1D2529; --ink:#E1E5E0; --muted:#97A1A6; --line:#2C363C;
+  --accent:#6AB0A3; --accent-ink:#0E1215; --accent-soft:#1F3532; --blood:#E07A72; --ok:#7DC18B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1215; --surface:#161C20; --sunk:#1D2529; --ink:#E1E5E0; --muted:#97A1A6; --line:#2C363C;
+  --accent:#6AB0A3; --accent-ink:#0E1215; --accent-soft:#1F3532; --blood:#E07A72; --ok:#7DC18B; color-scheme:dark}
+
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media (max-width:1150px){input,select,textarea{font-size:16px}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+.shell{max-width:1380px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+h1,h2,h3{text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Kopf */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 28px;padding-block:24px 14px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,4.4vw,44px);line-height:1;margin:6px 0 0;letter-spacing:.02em}
+.switch{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.switch select{min-width:0;max-width:260px}
+.savestate{font-family:var(--mono);font-size:11px;color:var(--muted);width:100%;text-align:right}
+
+/* Formularelemente */
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:7px 9px}
+textarea{width:100%;min-height:74px;resize:vertical;line-height:1.45}
+input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+input:disabled{opacity:.5}
+label{display:block}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;display:block}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:3px;padding:7px 14px;font-weight:500;font-size:14px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn.danger{background:transparent;border-color:var(--blood);color:var(--blood)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.di{width:15px;height:15px;flex:none}
+.rollnote{font-family:var(--mono);font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-size:13px}
+
+/* Raster */
+.app{display:grid;grid-template-columns:200px minmax(0,1fr) 290px;gap:28px;align-items:start}
+@media (max-width:1150px){.app{grid-template-columns:190px minmax(0,1fr)}}
+@media (max-width:780px){.app{grid-template-columns:minmax(0,1fr);gap:18px}}
+
+/* Schrittleiste */
+#steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;position:sticky;top:12px}
+#steps button{display:grid;grid-template-columns:26px 1fr 10px;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:3px;padding:8px 8px;font-size:14px}
+#steps button:hover{background:var(--sunk)}
+#steps button[aria-current="step"]{background:var(--ink);color:var(--bg)}
+#steps .no{font-family:var(--mono);font-size:12px;color:var(--muted)}
+#steps button[aria-current="step"] .no{color:inherit;opacity:.7}
+.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted)}
+.dot.done{background:var(--ok);border-color:var(--ok)}
+.dot.warn{background:var(--blood);border-color:var(--blood)}
+@media (max-width:780px){
+  #steps ol{flex-direction:row;overflow-x:auto;position:static;padding-bottom:4px;scrollbar-width:thin}
+  #steps li{flex:0 0 auto}
+  #steps button{grid-template-columns:auto auto auto;white-space:nowrap}
+}
+
+/* Hauptfläche */
+main{min-width:0}
+.stephead{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.stephead .no{font-family:var(--mono);color:var(--muted);font-size:13px}
+.stephead h2{font-family:var(--head);font-weight:600;font-size:clamp(28px,3.4vw,38px);line-height:1.05;margin:0}
+.lede{max-width:66ch;color:var(--muted);margin:4px 0 20px}
+.block{margin-block:22px}
+.block h3{font-family:var(--head);font-weight:600;font-size:22px;margin:0 0 8px}
+.rule{background:var(--sunk);border-top:1px dashed var(--muted);padding:12px 16px 14px;margin-block:20px;font-size:14px;max-width:72ch}
+.rule-h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.rule p{margin:0 0 6px}.rule p:last-child{margin:0}
+.rule ul,.rule ol{margin:4px 0 0;padding-left:20px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.form-grid input{width:100%}
+.note{font-size:13px;color:var(--muted)}
+.warnline{color:var(--blood);font-size:13.5px}
+.okline{color:var(--ok);font-size:13.5px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* Methodenwahl */
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--ink);border-radius:3px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:8px 14px;font-size:14px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;border:1px solid var(--blood);border-radius:3px;font-size:14px}
+
+/* Eigenschaftskarten */
+.chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:6px}
+.ccard-h{display:flex;align-items:baseline;gap:8px}
+.abbr{font-family:var(--head);font-weight:700;font-size:26px;line-height:1}
+.cname{font-size:13.5px;color:var(--muted)}
+.ccard-f{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ccard-v{display:flex;gap:8px;align-items:center}
+.ccard-v input,.ccard-v select{width:76px;font-size:20px;padding:4px 8px}
+.hf{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cdesc{font-size:12.5px;color:var(--muted);margin:0;line-height:1.35}
+.dice{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:22px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.die{display:inline-grid;place-items:center;width:22px;height:22px;border:1.5px solid var(--ink);border-radius:4px;color:var(--ink);font-weight:600;font-size:12px}
+.die.d10{border-radius:50%}
+.die.d100{width:auto;padding:0 5px}
+.counter{display:inline-flex;align-items:baseline;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:8px 14px}
+.counter b{font-family:var(--mono);font-size:24px;font-variant-numeric:tabular-nums;font-weight:600}
+.counter span{font-size:13px;color:var(--muted)}
+.neg{color:var(--blood)!important}
+.sticky-counter{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* Tabellen */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.val{font-weight:600;font-size:15px}
+tr.over td.val{color:var(--blood)}
+tr.hl td{background:var(--accent-soft)}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper input{width:62px;text-align:right;padding:4px 6px}
+.stepper button{width:28px;height:28px;border:1px solid var(--line);background:var(--bg);border-radius:3px;line-height:1;padding:0}
+.stepper button:hover{border-color:var(--accent)}
+.tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--accent);color:var(--accent);border-radius:2px;padding:0 4px;margin-left:6px;vertical-align:1px}
+.x{background:none;border:0;color:var(--muted);padding:0 4px;font-size:15px}
+.x:hover{color:var(--blood)}
+
+/* Berufe */
+.occgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.occbtn{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.occbtn:hover{border-color:var(--accent)}
+.occbtn strong{font-family:var(--head);font-size:19px;font-weight:600;line-height:1.1}
+.occbtn span{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.occdetail{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 18px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0 16px}
+.fact .lbl{margin-bottom:2px}
+.fact b{font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums}
+.slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.slots li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:start;padding-top:8px;border-top:1px solid var(--line)}
+.slots .sn{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:3px}
+.slots .picks{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.slots select{max-width:100%}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.pick input{width:180px}
+
+/* Alter */
+.bands{width:100%}
+.bands td{font-size:13.5px}
+.dedrow{display:grid;grid-template-columns:minmax(120px,1fr) 60px auto 60px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.dedrow:last-child{border-bottom:0}
+.checks{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.check{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+
+/* Hintergrund */
+.backgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.bfield{display:flex;flex-direction:column;gap:6px}
+.bfield-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.keyc{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted)}
+
+/* Finanzen */
+.money{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+
+/* Seitenleiste */
+#side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+.sheetcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 16px}
+.sheetcard h3{font-family:var(--head);font-size:22px;font-weight:600;margin:0;line-height:1.1}
+.sub{font-size:13px;color:var(--muted)}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 4px;margin-top:12px}
+.mini div{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);border-radius:3px;padding:4px 0}
+.mini small{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em}
+.mini b{font-family:var(--mono);font-size:17px;font-variant-numeric:tabular-nums}
+.derived{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:12px;font-size:13.5px}
+.derived div{display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding-block:3px}
+.derived b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.toplist{margin:8px 0 0;padding:0;list-style:none;font-size:13.5px}
+.toplist li{display:flex;justify-content:space-between;padding-block:2px}
+.toplist b{font-family:var(--mono)}
+
+/* Bogen */
+.sheet{background:var(--surface);border:1px solid var(--ink);border-radius:2px;padding:20px clamp(14px,3vw,28px)}
+.sheet-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:14px}
+.sheet-h h3{font-family:var(--display);font-weight:400;font-size:clamp(24px,3.4vw,34px);margin:0;line-height:1.05}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:4px 18px;font-size:14px}
+.kv span{color:var(--muted)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-block:12px}
+.sbox{border:1px solid var(--line);border-radius:2px;padding:6px 8px;display:grid;grid-template-columns:auto 1fr;gap:0 8px;align-items:center}
+.sbox .abbr{font-size:22px;grid-row:span 2}
+.sbox b{font-family:var(--mono);font-size:19px;text-align:right}
+.sbox small{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.sec-h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.skillcols{columns:3 230px;column-gap:24px;font-size:13.5px}
+.sk{display:flex;gap:6px;align-items:baseline;break-inside:avoid;padding-block:2px;border-bottom:1px dotted var(--line)}
+.sk .n{flex:1;min-width:0}
+.sk .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sk .v small{color:var(--muted)}
+.sk.up .n,.sk.up .v b{font-weight:600}
+.backlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 22px;font-size:14px}
+.backlist p{margin:2px 0 0;white-space:pre-wrap}
+.issues{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.issues li{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-size:14px}
+.exportbox{font-family:var(--mono);font-size:12px;min-height:140px}
+.transfer{background:var(--surface);border:1px solid var(--ink);border-radius:3px;padding:16px 18px 18px;margin:-8px 0 24px}
+.transfer-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.transfer-h h2{font-family:var(--head);font-weight:600;font-size:26px;margin:0}
+.tcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px 28px;margin-top:12px}
+.tcol{display:flex;flex-direction:column;gap:10px;min-width:0}
+.tcol h3{font-family:var(--head);font-weight:600;font-size:21px;margin:0}
+.scope{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+.scope label{display:inline-flex;align-items:center;gap:6px}
+.drop{border:1.5px dashed var(--line);border-radius:3px;padding:14px;text-align:center;font-size:13.5px;color:var(--muted)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.tmsg{font-size:13.5px;min-height:1.4em}
+.tmsg.err{color:var(--blood)}.tmsg.ok{color:var(--ok)}
+.btn.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.modeseg button{padding:5px 14px;font-weight:500}
+
+/* Spielansicht */
+.play{display:flex;flex-direction:column;gap:22px;padding-bottom:200px}
+.ptop{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px 24px}
+.ptop h2{font-family:var(--display);font-weight:400;font-size:clamp(26px,3.6vw,38px);line-height:1.05;margin:2px 0 0}
+.trackers{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+@media (max-width:620px){.trackers{grid-template-columns:1fr 1fr;gap:8px}.trk{padding:10px}.trk-v{font-size:28px}.trk-ctl input{width:58px}.trk .btn.small{padding:4px 8px}}
+.trk{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.trk-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.trk-h .lbl{margin:0}
+.trk-v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:36px;font-weight:600;line-height:1}
+.trk-v small{font-size:16px;color:var(--muted);font-weight:400}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.bar.low i{background:var(--blood)}
+.trk-ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.trk-ctl input{width:68px;padding:5px 7px}
+.trk .note{font-size:12.5px;margin:0}
+.hint{font-size:13px;border-left:3px solid var(--blood);padding:4px 0 4px 10px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;background:transparent}
+.chip:hover{border-color:var(--blood)}
+.chip[aria-pressed="true"]{background:var(--blood);border-color:var(--blood);color:var(--surface)}
+.rollbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.rollbar .seg button{padding:5px 11px;font-size:13.5px}
+.pgrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:920px){.pgrid{grid-template-columns:minmax(0,1fr)}}
+.pcol{display:flex;flex-direction:column;gap:22px;min-width:0}
+.psec h3{font-family:var(--head);font-weight:600;font-size:23px;margin:0 0 8px}
+.cbtns{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.cbtn{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:0 6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:6px 9px}
+.cbtn:hover{border-color:var(--accent)}
+.cbtn .abbr{font-size:20px}
+.cbtn b{font-family:var(--mono);font-size:17px;text-align:right}
+.cbtn small{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.skbtn{background:none;border:0;padding:2px 0;text-align:left;color:var(--ink);font-size:14px;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.skbtn:hover{color:var(--accent);text-decoration-color:var(--accent)}
+td.tick{width:38px;text-align:center}
+td.tick input{width:17px;height:17px;accent-color:var(--accent)}
+.wcard{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.wtop{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wtop strong{font-family:var(--head);font-size:19px}
+.wsum{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.wfields{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.wfields input,.wfields select{width:100%;padding:5px 7px}
+.ammo{font-family:var(--mono);font-size:13px}
+.freedice{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.freedice input{width:130px}
+.loglist{list-style:none;margin:0;padding:0;font-size:13px;max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+.loglist li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:5px 10px;border-bottom:1px solid var(--line)}
+.loglist li:last-child{border-bottom:0}
+.loglist time{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.devlist{margin:8px 0 0;padding-left:18px;font-size:13.5px}
+.result{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:2px solid var(--ink);box-shadow:0 -6px 24px rgba(0,0,0,.18);
+ padding-top:12px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.result-in{max-width:980px;margin:0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 20px;align-items:center}
+@media (max-width:620px){.result-in{grid-template-columns:auto minmax(0,1fr)} .result-in .ract{grid-column:1/-1}}
+.rnum{font-family:var(--display);font-size:48px;line-height:1;min-width:70px;text-align:center}
+.rmeta{display:flex;flex-direction:column;gap:3px;min-width:0}
+.rmeta .rt{font-weight:600}
+.rmeta .rd{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.ract{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.lvl{display:inline-block;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px;border:1px solid currentColor;width:max-content}
+.lvl.s5{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.lvl.s4,.lvl.s3,.lvl.s2{color:var(--ok)}
+.lvl.s1{color:var(--muted)}
+.lvl.s0{background:var(--blood);border-color:var(--blood);color:var(--surface)}
+.die.used{opacity:.35;text-decoration:line-through}
+
+/* Kleine Bildschirme: Kopf, Regeln, Leisten unten, Tabs */
+:root{--bar-h:60px}
+.hmore{display:none}
+.hacts{display:contents}
+details.rule>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:8px;margin:0}
+details.rule>summary::-webkit-details-marker{display:none}
+details.rule>summary::after{content:"Einklappen";font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+details.rule:not([open])>summary::after{content:"Anzeigen"}
+details.rule[open]>summary{margin-bottom:6px}
+.mbar,.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);border-top:1px solid var(--ink);
+ padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.mbar{align-items:center;gap:8px}
+.mbar .btn{padding:9px 14px}
+.mbar-sheet{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--sunk);border:1px solid var(--line);border-radius:3px;padding:5px 8px;line-height:1.2}
+.mbar-sheet span{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mbar-sheet small{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.mbar-sheet[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mbar-sheet[aria-expanded="true"] small{color:inherit;opacity:.75}
+.sheetback{position:fixed;inset:0;z-index:29;background:rgba(10,14,18,.35)}
+.sheet-close{display:none}
+.tabbar{justify-content:space-around;gap:2px;padding-top:4px}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;border-radius:3px;padding:5px 2px;font-size:11.5px;color:var(--muted);min-width:0}
+.tabbar button svg{width:22px;height:22px}
+.tabbar button[aria-current="page"]{color:var(--accent);font-weight:600}
+.tabbar button[aria-current="page"] svg{stroke-width:2.2}
+.ministrip{display:none}
+@media (max-width:1150px){
+ #side{position:fixed;left:0;right:0;bottom:calc(var(--bar-h) + env(safe-area-inset-bottom,0px));z-index:30;max-height:min(72vh,640px);overflow:auto;background:var(--bg);border-top:2px solid var(--ink);box-shadow:0 -8px 28px rgba(0,0,0,.2);
+  padding-block:14px 18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+ #side:not(.open){display:none}
+ .sheet-close{display:flex;justify-content:flex-end}
+ .mbar{display:flex}
+ #build{padding-bottom:calc(var(--bar-h) + 24px)}
+ #build .foot{display:none}
+}
+@media (max-width:780px){
+ .top{padding-block:12px 10px;margin-bottom:14px;gap:10px}
+ .top .eyebrow{display:none}
+ .brand h1{font-size:24px;margin:0}
+ .switch{width:100%}
+ .switch select{flex:1;max-width:none}
+ .hmore{display:inline-flex}
+ .hacts{display:none}
+ .hacts.open{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+ .savestate{text-align:left}
+ #main{scroll-margin-top:64px}
+ #steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:7;background:var(--bg);padding-block:6px;margin-inline:-4px}
+ .stephead h2{font-size:28px}
+ .lede{margin-bottom:14px}
+}
+@media (max-width:520px){
+ .chars{grid-template-columns:1fr 1fr;gap:8px}
+ .ccard{padding:10px}
+ .ccard .cdesc{display:none}
+ .ccard-v{gap:6px}
+ .ccard-v input,.ccard-v select{width:64px;font-size:18px}
+ .ccard .bl{display:none}
+ .form-grid{grid-template-columns:1fr}
+ .trk-h .note{display:none}
+ #pTable th,#pTable td{padding:7px 4px}
+ #pTable th:first-child,#pTable td:first-child{padding-left:10px}
+ #pTable td.num{width:34px}
+ #pTable td.val{font-size:16px}
+ #pTable td:nth-child(3),#pTable td:nth-child(4){font-size:13.5px;color:var(--muted)}
+ #pTable td.tick{width:34px;padding-right:8px}
+ #pTable .skbtn{font-size:14px;line-height:1.3}
+ #pTable .tag{margin-left:4px}
+}
+@media (max-width:920px){
+ .play [data-off]{display:none!important}
+ .tabbar{display:flex}
+ .play{padding-bottom:calc(var(--bar-h) + 190px);gap:16px}
+ .pgrid,.pcol{gap:16px}
+ .result{bottom:calc(var(--bar-h) + env(safe-area-inset-bottom,0px));padding-bottom:12px;box-shadow:0 -4px 16px rgba(0,0,0,.18)}
+ .ministrip{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;width:100%;background:none;border:0;padding:0 0 4px;text-align:left;font-size:13px;color:var(--muted)}
+ .ministrip b{font-family:var(--mono);font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+ .ministrip .cnd{color:var(--blood);font-weight:500}
+ .rollbar{gap:6px 10px}
+ .rollbar>.note{display:none}
+ .ptop h2{font-size:24px}
+}
+
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;margin-top:30px;padding-top:16px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.die.fresh{animation:tumble .45s ease-out}@keyframes tumble{from{transform:rotate(-90deg) scale(.6);opacity:.2}to{transform:none;opacity:1}}}
+</style>
+
+<div class="shell">
+  <header class="top">
+    <div class="brand">
+      <div class="eyebrow" id="eraEyebrow">Call of Cthulhu · 7. Edition · 1920er</div>
+      <h1>Investigatoren-Akte</h1>
+    </div>
+    <div class="switch" id="switch"></div>
+  </header>
+  <section id="transfer" class="transfer" hidden aria-label="Sichern und Übertragen"></section>
+  <div id="play" class="play" hidden></div>
+  <div class="app" id="build">
+    <nav id="steps" aria-label="Schritte"></nav>
+    <main id="main"></main>
+    <aside id="side" aria-label="Laufender Bogen"></aside>
+    <div id="sheetBack" class="sheetback" data-act="sheet" hidden></div>
+    <nav id="mbar" class="mbar" aria-label="Schritte wechseln"></nav>
+  </div>
+</div>
+
+<script>
+/* ===================== Regeln & Daten ===================== */
+const ORDER=['STR','CON','SIZ','DEX','APP','INT','POW','EDU'];
+const CH={
+ STR:{a:'ST',n:'Stärke',f:'3W6 × 5',d:'Muskelkraft: heben, ziehen, festhalten.'},
+ CON:{a:'KO',n:'Konstitution',f:'3W6 × 5',d:'Gesundheit, Ausdauer, Widerstandskraft.'},
+ SIZ:{a:'GR',n:'Größe',f:'(2W6+6) × 5',d:'Körpergröße und Gewicht.'},
+ DEX:{a:'GE',n:'Geschicklichkeit',f:'3W6 × 5',d:'Gewandtheit und Reflexe. Bestimmt Ausweichen.'},
+ APP:{a:'ER',n:'Erscheinung',f:'3W6 × 5',d:'Ausstrahlung und äußere Wirkung.'},
+ INT:{a:'IN',n:'Intelligenz',f:'(2W6+6) × 5',d:'Auffassungsgabe. Gibt die Punkte für persönliche Interessen.'},
+ POW:{a:'MA',n:'Mana',f:'3W6 × 5',d:'Willenskraft. Bestimmt Stabilität und Magiepunkte.'},
+ EDU:{a:'BI',n:'Bildung',f:'(2W6+6) × 5',d:'Formales Wissen. Bestimmt die Muttersprache.'}
+};
+const TWO=['SIZ','INT','EDU'];
+const ARRAY=[80,70,60,60,50,50,50,40];
+const POINTBUY=460;
+
+const SK=[
+ {id:'anthropologie',n:'Anthropologie',b:1},
+ {id:'archaeologie',n:'Archäologie',b:1},
+ {id:'ausweichen',n:'Ausweichen',b:'GE/2'},
+ {id:'autofahren',n:'Autofahren',b:20},
+ {id:'bibliothek',n:'Bibliotheksnutzung',b:20},
+ {id:'buchfuehrung',n:'Buchführung',b:5},
+ {id:'computer',n:'Computernutzung',b:5,era:'modern'},
+ {id:'charme',n:'Charme',b:15},
+ {id:'mythos',n:'Cthulhu-Mythos',b:0},
+ {id:'einschuechtern',n:'Einschüchtern',b:15},
+ {id:'elektrik',n:'Elektrische Reparaturen',b:10},
+ {id:'elektronik',n:'Elektronik',b:1,era:'modern'},
+ {id:'ersteHilfe',n:'Erste Hilfe',b:30},
+ {id:'fernkampf',n:'Fernkampf',b:15,spec:1,def:['Faustfeuerwaffe','Gewehr/Schrotflinte'],sb:{'Faustfeuerwaffe':20,'Gewehr/Schrotflinte':25,'Maschinenpistole':15,'Bogen':15,'Maschinengewehr':10}},
+ {id:'finanzkraft',n:'Finanzkraft',b:0},
+ {id:'fingerfertigkeit',n:'Fingerfertigkeit',b:10},
+ {id:'fremdsprache',n:'Fremdsprache',b:1,spec:1,sugg:['Englisch','Französisch','Latein','Altgriechisch','Italienisch','Spanisch','Arabisch','Hebräisch','Russisch','Chinesisch']},
+ {id:'geschichte',n:'Geschichtskenntnisse',b:5},
+ {id:'heimlichkeit',n:'Heimlichkeit',b:20},
+ {id:'horchen',n:'Horchen',b:20},
+ {id:'klettern',n:'Klettern',b:20},
+ {id:'kunst',n:'Kunst/Handwerk',b:5,spec:1,sugg:['Fotografie','Schauspiel','Malerei','Literatur','Musikinstrument','Gesang','Technisches Zeichnen','Landwirtschaft','Tischlerei','Fälschen']},
+ {id:'mechanik',n:'Mechanische Reparaturen',b:10},
+ {id:'medizin',n:'Medizin',b:1},
+ {id:'muttersprache',n:'Muttersprache',b:'BI'},
+ {id:'nahkampf',n:'Nahkampf',b:15,spec:1,def:['Handgemenge'],sb:{'Handgemenge':25,'Axt':15,'Schwert':20,'Speer':20,'Peitsche':5,'Garotte':15,'Flegel':10}},
+ {id:'naturkunde',n:'Naturkunde',b:10},
+ {id:'naturwiss',n:'Naturwissenschaft',b:1,spec:1,sugg:['Astronomie','Biologie','Botanik','Chemie','Geologie','Ingenieurwesen','Kryptographie','Mathematik','Pharmazie','Physik','Zoologie']},
+ {id:'navigation',n:'Navigation',b:10},
+ {id:'okkultismus',n:'Okkultismus',b:5},
+ {id:'psychoanalyse',n:'Psychoanalyse',b:1},
+ {id:'psychologie',n:'Psychologie',b:10},
+ {id:'rechtswesen',n:'Rechtswesen',b:5},
+ {id:'reiten',n:'Reiten',b:5},
+ {id:'schaetzen',n:'Schätzen',b:5},
+ {id:'schliesstechnik',n:'Schließtechnik',b:1},
+ {id:'schweresGeraet',n:'Schweres Gerät bedienen',b:1},
+ {id:'schwimmen',n:'Schwimmen',b:20},
+ {id:'springen',n:'Springen',b:20},
+ {id:'spurensuche',n:'Spurensuche',b:10},
+ {id:'steuern',n:'Steuern',b:1,spec:1,sugg:['Flugzeug','Boot','Luftschiff']},
+ {id:'ueberleben',n:'Überleben',b:10,spec:1,sugg:['Wald','Gebirge','Wüste','Arktis','See']},
+ {id:'ueberreden',n:'Überreden',b:5},
+ {id:'ueberzeugen',n:'Überzeugen',b:10},
+ {id:'verborgenes',n:'Verborgenes erkennen',b:25},
+ {id:'verkleiden',n:'Verkleiden',b:5},
+ {id:'werfen',n:'Werfen',b:20}
+];
+SK.forEach(s=>{if(s.sb&&!s.sugg)s.sugg=Object.keys(s.sb)});
+const SKM=Object.fromEntries(SK.map(s=>[s.id,s]));
+const SOCIAL=['charme','einschuechtern','ueberreden','ueberzeugen'];
+
+const F4={base:[['EDU',4]]};
+const FDS={base:[['EDU',2]],alt:['DEX','STR']};
+const FDP={base:[['EDU',2]],alt:['DEX','POW']};
+const FAP={base:[['EDU',2],['APP',2]]};
+const OCC={
+ anwalt:{n:'Rechtsanwalt',f:F4,cr:[30,80],d:'Vertritt Mandanten vor Gericht oder berät Firmen und Familien in heiklen Angelegenheiten.',s:['buchfuehrung','rechtswesen','bibliothek','social#2','psychologie','any#2']},
+ antiquar:{n:'Antiquar',f:F4,cr:[30,70],d:'Handelt mit alten Büchern, Kunst und Kuriositäten – und weiß oft mehr über deren Herkunft, als gut ist.',s:['schaetzen','kunst:*','geschichte','bibliothek','fremdsprache:*','social','verborgenes','any']},
+ archaeologe:{n:'Archäologe',f:F4,cr:[10,40],d:'Gräbt vergessene Kulturen aus, oft weit entfernt von zu Hause.',s:['schaetzen','archaeologie','geschichte','fremdsprache:*','bibliothek','verborgenes','mechanik','navigation|naturwiss:*']},
+ arzt:{n:'Arzt',f:F4,cr:[30,80],d:'Niedergelassener Mediziner, Chirurg oder Klinikarzt mit Zugang zu Medikamenten und Patientenakten.',s:['ersteHilfe','medizin','fremdsprache:Latein','psychologie','naturwiss:Biologie','naturwiss:Pharmazie','any#2']},
+ autor:{n:'Autor',f:F4,cr:[9,30],d:'Schreibt Romane, Sachbücher oder Groschenhefte und recherchiert dafür an ungewöhnlichen Orten.',s:['kunst:Literatur','geschichte','bibliothek','naturkunde|okkultismus','fremdsprache:*','muttersprache','psychologie','any']},
+ bauer:{n:'Farmer',f:FDS,cr:[9,30],d:'Bewirtschaftet Land und Vieh, kennt jede Scheune und jeden Feldweg der Gegend.',s:['kunst:Landwirtschaft','autofahren','social','mechanik','naturkunde','schweresGeraet','spurensuche','any']},
+ bibliothekar:{n:'Bibliothekar',f:F4,cr:[9,35],d:'Hüter von Katalogen und Magazinen – mit Schlüssel zu Räumen, die sonst niemand betritt.',s:['buchfuehrung','bibliothek','fremdsprache:*','muttersprache','any#4']},
+ detektiv:{n:'Privatdetektiv',f:FDS,cr:[9,30],d:'Beschattet untreue Ehepartner, sucht vermisste Personen und arbeitet für jeden, der zahlt.',s:['kunst:Fotografie','verkleiden','rechtswesen','bibliothek','social','psychologie','verborgenes','any']},
+ dilettant:{n:'Dilettant',f:FAP,cr:[50,99],d:'Wohlhabend, gebildet und gelangweilt – mit Zeit und Geld für Abenteuer.',s:['kunst:*','fernkampf:Gewehr/Schrotflinte|fernkampf:Faustfeuerwaffe','fremdsprache:*','reiten','social','any#3']},
+ geistlicher:{n:'Geistlicher',f:F4,cr:[9,60],d:'Pfarrer, Priester oder Rabbiner. Hört Beichten und kennt die Sorgen der Gemeinde.',s:['buchfuehrung','geschichte','bibliothek','horchen','fremdsprache:*','social','psychologie','any']},
+ ingenieur:{n:'Ingenieur',f:F4,cr:[30,60],d:'Plant Brücken, Maschinen oder Stromnetze und glaubt an das, was sich berechnen lässt.',s:['kunst:Technisches Zeichnen','elektrik','bibliothek','mechanik','schweresGeraet','naturwiss:Ingenieurwesen','naturwiss:Physik','any']},
+ journalist:{n:'Journalist',f:F4,cr:[9,30],d:'Reporter oder Kolumnist auf der Jagd nach der nächsten Schlagzeile.',s:['kunst:Fotografie','geschichte','bibliothek','muttersprache','social','psychologie','any#2']},
+ kommissar:{n:'Kriminalkommissar',f:FDS,cr:[20,50],d:'Ermittelt in Mordfällen und Verschwinden – und hat Zugang zu Akten und Asservaten.',s:['kunst:Schauspiel|verkleiden','fernkampf:Faustfeuerwaffe','rechtswesen','horchen','social','psychologie','verborgenes','any']},
+ krankenpflege:{n:'Krankenschwester / -pfleger',f:F4,cr:[9,30],d:'Arbeitet in Klinik, Sanatorium oder Privatpflege und sieht, was Ärzte übersehen.',s:['ersteHilfe','horchen','medizin','social','psychologie','naturwiss:Biologie','naturwiss:Chemie','verborgenes']},
+ krimineller:{n:'Krimineller',f:FDS,cr:[5,65],d:'Schmuggler, Einbrecher, Schläger oder Hehler – im Dienst eines Syndikats oder auf eigene Rechnung.',s:['kunst:Schauspiel|verkleiden','schaetzen','social','nahkampf:Handgemenge|fernkampf:Faustfeuerwaffe','schliesstechnik|mechanik','heimlichkeit','psychologie','verborgenes']},
+ kuenstler:{n:'Künstler',f:FDP,cr:[9,50],d:'Maler, Bildhauer oder Fotograf, empfänglich für Visionen und Träume.',s:['kunst:*','geschichte|naturkunde','social','fremdsprache:*','psychologie','verborgenes','any#2']},
+ landstreicher:{n:'Landstreicher',f:{base:[['EDU',2]],alt:['APP','DEX','STR']},cr:[0,5],d:'Zieht ohne festen Wohnsitz von Ort zu Ort, mit Güterzügen und Gelegenheitsarbeit.',s:['klettern','springen','horchen','navigation','social','heimlichkeit','any#2']},
+ musiker:{n:'Musiker',f:FDP,cr:[9,30],d:'Spielt in Jazzclubs, Orchestern oder auf der Straße.',s:['kunst:Musikinstrument','social','horchen','psychologie','any#4']},
+ offizier:{n:'Offizier',f:FDS,cr:[20,70],d:'Führt Truppen, oft mit Fronterfahrung aus dem Großen Krieg.',s:['buchfuehrung','fernkampf:Faustfeuerwaffe','navigation','social#2','psychologie','ueberleben:*','any']},
+ parapsychologe:{n:'Parapsychologe',f:F4,cr:[9,30],d:'Untersucht Spukhäuser, Medien und unerklärliche Phänomene mit wissenschaftlichem Anspruch.',s:['anthropologie','kunst:Fotografie','geschichte','bibliothek','okkultismus','fremdsprache:*','psychologie','any']},
+ polizist:{n:'Polizist (Streife)',f:FDS,cr:[9,30],d:'Uniformierter Beamter, der sein Revier und dessen Leute kennt.',s:['nahkampf:Handgemenge','fernkampf:Faustfeuerwaffe','ersteHilfe','social','rechtswesen','psychologie','verborgenes','autofahren|reiten']},
+ professor:{n:'Professor',f:F4,cr:[20,70],d:'Lehrt und forscht an einer Universität – etwa der Miskatonic University in Arkham.',s:['bibliothek','fremdsprache:*','muttersprache','psychologie','any#4']},
+ soldat:{n:'Soldat',f:FDS,cr:[9,30],d:'Einfacher Soldat oder Unteroffizier, im Feld erprobt.',s:['klettern|schwimmen','ausweichen','nahkampf:Handgemenge','fernkampf:Gewehr/Schrotflinte','heimlichkeit','ueberleben:*','ersteHilfe|mechanik|fremdsprache:*#2']},
+ sportler:{n:'Sportler',f:FDS,cr:[9,70],d:'Boxer, Leichtathlet oder Baseballspieler – bekannt, gut trainiert, oft gefeiert.',s:['klettern','springen','nahkampf:Handgemenge','reiten','social','schwimmen','werfen','any']},
+ unterhaltung:{n:'Unterhaltungskünstler',f:FAP,cr:[9,70],d:'Schauspieler, Sänger, Zauberkünstler oder Tänzer auf Bühne und Leinwand.',s:['kunst:*','verkleiden','social#2','horchen','psychologie','any#2']},
+ it:{n:'IT-Fachkraft',f:F4,cr:[10,70],era:'modern',d:'Programmiert, betreut Netzwerke oder repariert Rechner – und findet Spuren in Daten, die andere übersehen.',s:['computer','elektrik','elektronik','bibliothek','naturwiss:Mathematik','verborgenes','any#2']},
+ hacker:{n:'Hacker',f:F4,cr:[10,70],era:'modern',d:'Dringt in fremde Systeme ein – als Sicherheitsberater, Aktivist oder auf eigene Rechnung.',s:['computer','elektronik','elektrik','bibliothek','verborgenes','social','any#2']},
+ sanitaeter:{n:'Rettungssanitäter',f:FDS,cr:[9,30],era:'modern',d:'Ist als Erster am Unfallort und hat schon Dinge gesehen, die in keinem Bericht stehen.',s:['ersteHilfe','medizin','autofahren','psychologie','social','horchen','verborgenes','naturwiss:Biologie']},
+ eigener:{n:'Eigener Beruf',f:{base:[['EDU',2]],alt:['EDU','DEX','STR','APP','POW']},cr:[0,99],d:'Für Berufe, die hier fehlen. Lege mit deiner Spielleitung Formel, Finanzkraft-Spanne und acht passende Fertigkeiten fest.',s:['any#8'],custom:true}
+};
+const ERA={classic:'1920er',modern:'Gegenwart'};
+const era=()=>C.era==='modern'?'modern':'classic';
+const okEra=x=>!x||!x.era||x.era===era();
+const occIds=()=>OCC_IDS.filter(id=>okEra(OCC[id]));
+const OCC_IDS=Object.keys(OCC).sort((a,b)=>a==='eigener'?1:b==='eigener'?-1:OCC[a].n.localeCompare(OCC[b].n,'de'));
+
+function backSugg(b){return b.s.concat((era()==='modern'?b.m:b.c)||[])}
+const BACK=[
+ {k:'desc',n:'Persönliche Beschreibung',s:['Hager und unauffällig, mit wachem Blick','Stämmig, wettergegerbtes Gesicht','Zerstreut, Tintenflecken an den Fingern','Nervös, kaut an den Fingernägeln','Hochgewachsen, mit leichtem Hinken','Jugendlich, mit widerspenstigem Haar'],c:['Stets elegant gekleidet, nie ohne Hut','Freundliches Lächeln, abgetragener Anzug'],m:['Immer in Kapuzenpulli und Sneakers','Tätowierter Unterarm, kurz rasiertes Haar','Dezenter Business-Look, Smartwatch am Handgelenk']},
+ {k:'ideo',n:'Weltanschauung & Überzeugungen',s:['Gläubig: Eine höhere Macht wacht über uns.','Die Wissenschaft wird alles erklären können.','Alles ist vorherbestimmt.','Politisch engagiert für die kleinen Leute.','Nur wer stark ist, kommt durch.','Jedes Rätsel verlangt nach einer Lösung.','Die Familie geht über alles.','Das Leben ist kurz – genieße es.']},
+ {k:'people',n:'Bedeutende Personen',s:['Ein Elternteil, dem man nie gerecht wurde','Ein Mentor aus der Studienzeit','Ein Jugendfreund, der spurlos verschwand','Die oder der Verlobte','Ein jüngeres Geschwister, das man beschützt','Ein beruflicher Rivale','Eine alte Lehrerin'],c:['Ein Kamerad aus dem Krieg'],m:['Eine Online-Bekanntschaft, die man nie getroffen hat','Die beste Freundin aus der WG-Zeit']},
+ {k:'places',n:'Bedeutsame Orte',s:['Das Elternhaus auf dem Land','Der Lesesaal der Universitätsbibliothek','Ein verrauchtes Café in der Altstadt','Die Küste, an der man aufwuchs','Die Kirche des Heimatdorfs','Die eigene kleine Werkstatt','Ein Bahnsteig, an dem man Abschied nahm'],c:['Ein Schützengraben in Flandern'],m:['Ein verlassenes Fabrikgelände am Stadtrand','Das Großraumbüro im zwölften Stock']},
+ {k:'items',n:'Wertvoller Besitz',s:['Die Taschenuhr des Großvaters','Ein abgegriffenes Notizbuch','Ein Foto in einem Medaillon','Die alte Dienstpistole','Ein seltenes Buch in fremder Sprache','Ein Glücksbringer aus Messing','Ein Ring, der nicht ganz passt'],c:['Ein silberner Füllfederhalter'],m:['Ein altes Handy mit Nachrichten, die man nicht löschen kann','Eine Festplatte mit Familienfotos']},
+ {k:'traits',n:'Charakterzüge',s:['Neugierig bis zum Leichtsinn','Pedantisch und genau','Großzügig gegenüber Fremden','Misstrauisch gegenüber Autoritäten','Abergläubisch','Trockener Humor','Unerschütterlich ruhig','Ehrgeizig']},
+ {k:'scars',n:'Verletzungen & Narben',s:[]},
+ {k:'phobias',n:'Phobien & Manien',s:[]}
+];
+
+const NAMES={
+ w:['Clara','Martha','Edith','Helene','Margarete','Ida','Lotte','Agnes','Dorothy','Evelyn','Mildred','Ruth','Frances','Hazel','Josephine','Irene'],
+ m:['Heinrich','Wilhelm','Friedrich','Ernst','Otto','Karl','Paul','August','Harold','Walter','Arthur','Henry','Edward','Charles','Albert','Howard'],
+ s:['Albers','Brandt','Hoffmann','Krüger','Lindqvist','Petersen','Vogel','Hartmann','Becker','Sommer','Thompson','Fletcher','Holloway','Prescott','Whitfield','Caldwell','Morrison','Bennett']};
+const NAMES_M={w:['Lena','Sophie','Anna','Julia','Laura','Miriam','Jessica','Ashley','Megan','Emily','Samantha','Nicole','Hannah','Lea'],
+ m:['Lukas','Jonas','Felix','Tim','Jan','Niklas','Michael','Jason','Tyler','Kevin','Daniel','Ryan','Florian','Sebastian']};
+const GEAR_M=['Smartphone','Powerbank','Laptop','LED-Taschenlampe','Notizbuch und Kugelschreiber','Multitool','Fernglas','Spiegelreflexkamera','Erste-Hilfe-Set','Autoschlüssel','Wasserflasche','Kabelbinder','Pfefferspray','Presseausweis','Thermoskanne mit Kaffee','Regenjacke','Lupe','Tablet mit Offline-Karten','Funkgeräte (2)','Brecheisen','Seil (15 m)','Dietrichset','Wörterbuch Latein–Deutsch','Fahrrad','Ladekabel und Adapter','Rucksack'];
+const HOMES=['Arkham, Massachusetts','Boston','New York','Kingsport, Massachusetts','Providence, Rhode Island','Chicago','New Orleans','San Francisco','London','Berlin','Hamburg','Wien','Paris'];
+const BIRTH=['Bremen','Leipzig','München','Hamburg','Wien','Dublin','Edinburgh','Neapel','Krakau','Boston','eine Farm in Ohio','ein Fischerdorf in Maine','Philadelphia','Zürich'];
+const GEAR=['Taschenlampe','Notizbuch und Bleistift','Taschenmesser','Feldstecher','Kodak-Kamera','Flachmann mit Whiskey','Revolver .38 mit 12 Patronen','Dietrichset','Seil (15 m)','Brecheisen','Streichhölzer und Kerzen','Kompass','Stadtplan','Reiseschreibmaschine','Petroleumlampe','Verbandskasten','Regenmantel und Hut','Lupe','Füllfederhalter','Taschenbibel','Taschenuhr','Wörterbuch Latein–Englisch','Fahrrad','Schrotflinte mit 20 Patronen','Schaufel','Thermoskanne mit Kaffee'];
+const DI=`<svg class="di" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5.2" cy="5.2" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="10.8" cy="10.8" r="1.3" fill="currentColor"/></svg>`;
+
+const STEPS=[
+ {id:'person',t:'Person'},
+ {id:'chars',t:'Eigenschaften'},
+ {id:'age',t:'Alter'},
+ {id:'occ',t:'Beruf'},
+ {id:'occskills',t:'Berufsfertigkeiten'},
+ {id:'pers',t:'Persönliche Interessen'},
+ {id:'back',t:'Hintergrund'},
+ {id:'money',t:'Finanzen & Besitz'},
+ {id:'sheet',t:'Charakterbogen'}
+];
+
+/* ===================== Hilfsfunktionen ===================== */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return 1+(a[0]%n)};
+const fmt=n=>Number(n).toLocaleString('de-DE');
+const half=v=>Math.floor(v/2), fifth=v=>Math.floor(v/5);
+function splitKey(k){const i=k.indexOf(':');return i<0?[k,'']:[k.slice(0,i),k.slice(i+1)]}
+
+function newChar(){return{
+ id:'inv-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),step:0,
+ era:'classic',info:{name:'',player:'',gender:'',residence:'',birthplace:''},
+ method:'roll',base:{STR:null,CON:null,SIZ:null,DEX:null,APP:null,INT:null,POW:null,EDU:null},rolls:{},
+ luck:[null,null],luckDice:[null,null],age:25,ageDed:{STR:0,CON:0,DEX:0,SIZ:0},eduChecks:[],
+ ageDice:null,occRoll:null,occ:'',occAlt:'',occName:'',occPick:{},extraSpecs:[],occPts:{},persPts:{},
+ back:{desc:'',ideo:'',people:'',places:'',items:'',traits:'',scars:'',phobias:''},keyConn:'',gear:'',
+ updated:Date.now()}}
+function normalize(o){const d=newChar();const c=Object.assign(d,o||{});
+ for(const k of ['info','base','ageDed','back','rolls','occPick','occPts','persPts'])c[k]=Object.assign(newChar()[k],o&&o[k]||{});
+ for(const k of ['luck','luckDice','eduChecks','extraSpecs'])if(!Array.isArray(c[k]))c[k]=newChar()[k];
+ delete c.dirty;return c}
+
+function example(){const c=newChar();c.id='beispiel-wendt';c.example=true;
+ Object.assign(c.info,{name:'Dr. Clara Wendt (Beispiel)',player:'',gender:'weiblich',residence:'Arkham, Massachusetts',birthplace:'Bremen'});
+ c.base={STR:50,CON:60,SIZ:55,DEX:60,APP:50,INT:75,POW:65,EDU:80};
+ c.rolls={STR:[3,4,3],CON:[5,3,4],SIZ:[2,3],DEX:[6,2,4],APP:[2,5,3],INT:[4,5],POW:[6,4,3],EDU:[6,4]};
+ c.luck=[55,null];c.luckDice=[[4,3,4],null];c.age=34;c.eduChecks=[{roll:93,gain:4}];
+ c.occ='arzt';c.occPick={6:['verborgenes','bibliothek']};c.extraSpecs=['fremdsprache:Englisch'];
+ c.occPts={finanzkraft:40,ersteHilfe:40,medizin:59,'fremdsprache:Latein':49,psychologie:40,'naturwiss:Biologie':49,'naturwiss:Pharmazie':39,verborgenes:10,bibliothek:10};
+ c.persPts={horchen:20,okkultismus:25,'fremdsprache:Englisch':30,autofahren:20,ausweichen:15,'fernkampf:Faustfeuerwaffe':20,geschichte:20};
+ c.back={desc:'Schmal, dunkles Haar im Nacken geknotet, trägt eine Nickelbrille.',ideo:'Die Wissenschaft wird alles erklären können.',people:'Ihr Doktorvater Prof. Hellwig, der 1919 in einer Nervenheilanstalt starb.',places:'Der Anatomiesaal der Miskatonic University.',items:'Das Stethoskop ihres Vaters.',traits:'Pedantisch und genau; verliert nie die Ruhe.',scars:'',phobias:''};
+ c.updated=0;c.keyConn='people';c.gear='Arzttasche mit Verbandszeug und Morphium, Notizbuch, Taschenlampe.';c.step=8;return c}
+
+/* ===================== Zustand & Speicherung ===================== */
+let chars=[example()];let C=chars[0];
+let store={kind:'local'};
+const ui={confirmDel:false,pendingMethod:null,search:'',fresh:null,copied:'',transfer:false,scope:'one',tmsg:null,diff:2,bp:0,result:null,ptab:(()=>{try{return localStorage.getItem('coc7-ptab')||'status'}catch(e){return'status'}})(),sheet:false,hmenu:false,hints:[],pfilter:'used',psearch:'',wedit:null,sanLoss:'',freeDice:'1W6'};
+const LS='coc7-investigatoren-v1';
+function lsRead(){try{const a=JSON.parse(localStorage.getItem(LS)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function lsWrite(){try{localStorage.setItem(LS,JSON.stringify(chars.filter(c=>!c.example||c.touched).map(clean)))}catch(e){}}
+function clean(c){const o=JSON.parse(JSON.stringify(c));delete o.dirty;return o}
+let status='';
+function setStatus(t){status=t;const el=document.getElementById('savestate');if(el)el.textContent=t}
+const timers={},chains={};
+function touch(){C.updated=Date.now();C.touched=true;const c=C;clearTimeout(timers[c.id]);timers[c.id]=setTimeout(()=>persist(c),800);setStatus('Wird gespeichert …')}
+function persist(c){lsWrite();
+ if(store.kind==='db'){chains[c.id]=(chains[c.id]||Promise.resolve()).then(()=>store.col.doc(c.id).set(clean(c))).then(()=>setStatus('Gespeichert in deinem Konto'),e=>setStatus(e&&e.code==='quota_exceeded'?'Speicher voll – lösche alte Investigatoren':'Konto-Speicher nicht erreichbar – gesichert in diesem Browser'))}
+ else setStatus('Gespeichert in diesem Browser')}
+function storeLabel(){return store.kind==='db'?'Gespeichert in deinem Konto':'Gespeichert in diesem Browser'}
+async function initStore(){
+ const local=lsRead().map(normalize);
+ let remote=null;
+ try{if(window.claude&&claude.use){const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+   const uid=user?await user.id():null;
+   if(db&&uid){const col=db.collection('data/users/'+uid);store={kind:'db',col};const snap=await col.get();remote=snap.docs.map(d=>normalize(d.data()))}}}catch(e){store={kind:'local'}}
+ const touchedNow=chars.filter(c=>c.touched);
+ let list=remote&&remote.length?remote:local;
+ if(remote&&!remote.length&&local.length){list=local;local.forEach(c=>persist(c))}
+ const byId=new Map(list.map(c=>[c.id,c]));touchedNow.forEach(c=>{byId.set(c.id,c);persist(c)});
+ list=[...byId.values()].sort((a,b)=>b.updated-a.updated);
+ if(list.length){const cur=C.id;chars=list;C=chars.find(c=>c.id===cur)||chars[0]}
+ setStatus(storeLabel());renderAll()}
+
+/* ===================== Berechnungen ===================== */
+function band(age){age=+age||0;
+ if(age<20)return{lbl:'15–19',checks:0,ded:5,keys:['STR','SIZ'],app:0,mov:0,youth:true,eduPen:5};
+ if(age<40)return{lbl:'20–39',checks:1,ded:0,keys:[],app:0,mov:0,eduPen:0};
+ if(age<50)return{lbl:'40–49',checks:2,ded:5,keys:['STR','CON','DEX'],app:5,mov:1,eduPen:0};
+ if(age<60)return{lbl:'50–59',checks:3,ded:10,keys:['STR','CON','DEX'],app:10,mov:2,eduPen:0};
+ if(age<70)return{lbl:'60–69',checks:4,ded:20,keys:['STR','CON','DEX'],app:15,mov:3,eduPen:0};
+ if(age<80)return{lbl:'70–79',checks:4,ded:40,keys:['STR','CON','DEX'],app:20,mov:4,eduPen:0};
+ return{lbl:'80–89',checks:4,ded:80,keys:['STR','CON','DEX'],app:25,mov:5,eduPen:0}}
+const BANDS=[[15,'15–19','ST oder GR −5 (gesamt), BI −5','keine','Glück 2× würfeln, höheren Wert nehmen'],[20,'20–39','–','1 Probe',''],[40,'40–49','ST/KO/GE −5, ER −5','2 Proben','BW −1'],[50,'50–59','ST/KO/GE −10, ER −10','3 Proben','BW −2'],[60,'60–69','ST/KO/GE −20, ER −15','4 Proben','BW −3'],[70,'70–79','ST/KO/GE −40, ER −20','4 Proben','BW −4'],[80,'80–89','ST/KO/GE −80, ER −25','4 Proben','BW −5']];
+function eduBefore(i){const B=band(C.age);let v=(+C.base.EDU||0)-B.eduPen;for(let j=0;j<i;j++)v+=(C.eduChecks[j]?.gain||0);return Math.min(v,99)}
+function final(k){const b=C.base[k];if(b==null||b==='')return null;const B=band(C.age);let v=+b;
+ if(B.keys.includes(k))v-=(+C.ageDed[k]||0);
+ if(k==='APP')v-=B.app;
+ if(k==='EDU'){v=eduBefore(B.checks)}
+ return Math.max(v,0)}
+function dedSum(){const B=band(C.age);return B.keys.reduce((s,k)=>s+(+C.ageDed[k]||0),0)}
+function luck(){const [a,b]=C.luck;if(a==null)return null;if(band(C.age).youth&&b!=null)return Math.max(a,b);return a}
+function allFinal(){return ORDER.every(k=>final(k)!=null)}
+function dbBuild(){const s=final('STR'),z=final('SIZ');if(s==null||z==null)return null;const t=s+z;
+ if(t<=64)return{db:'−2',b:-2};if(t<=84)return{db:'−1',b:-1};if(t<=124)return{db:'0',b:0};if(t<=164)return{db:'+1W4',b:1};if(t<=204)return{db:'+1W6',b:2};if(t<=284)return{db:'+2W6',b:3};if(t<=364)return{db:'+3W6',b:4};if(t<=444)return{db:'+4W6',b:5};return{db:'+5W6',b:6}}
+function mov(){const s=final('STR'),d=final('DEX'),z=final('SIZ');if(s==null||d==null||z==null)return null;let m=8;if(s<z&&d<z)m=7;else if(s>z&&d>z)m=9;return m-band(C.age).mov}
+function derived(){const f=k=>final(k);const dbb=dbBuild();return{
+ hp:f('CON')!=null&&f('SIZ')!=null?Math.floor((f('CON')+f('SIZ'))/10):null,
+ mp:f('POW')!=null?Math.floor(f('POW')/5):null,
+ san:f('POW'),luck:luck(),mov:mov(),db:dbb?dbb.db:null,build:dbb?dbb.b:null}}
+
+function skillName(key){const[f,s]=splitKey(key);const d=SKM[f];if(!d)return key;return s?`${d.n}: ${s}`:d.n}
+function skillBase(key){const[f,s]=splitKey(key);const d=SKM[f];if(!d)return 0;
+ if(d.b==='GE/2'){const v=final('DEX');return v==null?0:half(v)}
+ if(d.b==='BI'){const v=final('EDU');return v==null?0:v}
+ if(s&&d.sb&&d.sb[s]!=null)return d.sb[s];return d.b}
+function parseSlot(t){let n=1;const h=t.indexOf('#');if(h>=0){n=+t.slice(h+1);t=t.slice(0,h)}
+ if(t==='social')return{n,opts:SOCIAL,lbl:'zwischenmenschlich'};
+ if(t==='any')return{n,opts:anyOpts(),any:true};
+ if(t.includes('|'))return{n,opts:t.split('|')};
+ if(t.endsWith(':*'))return{n,opts:[t]};
+ return{fixed:t}}
+const _anyOpts={};
+function anyOpts(){const e=era();if(_anyOpts[e])return _anyOpts[e];const o=[];SK.forEach(d=>{if(d.id==='mythos'||d.id==='finanzkraft'||!okEra(d))return;if(d.spec){(d.def||[]).forEach(s=>o.push(d.id+':'+s));o.push(d.id+':*')}else o.push(d.id)});
+ return _anyOpts[e]=o.sort((a,b)=>optLabel(a).localeCompare(optLabel(b),'de'))}
+function optLabel(o){return o.endsWith(':*')?SKM[o.slice(0,-2)].n+' (eigene Spezialisierung)':skillName(o)}
+function slots(){const o=OCC[C.occ];return o?o.s.map(parseSlot):[]}
+function validPick(p){if(!p)return false;const[f,s]=splitKey(p);const d=SKM[f];if(!d||f==='mythos'||!okEra(d))return false;return d.spec?!!s:true}
+function occKeyList(){const l=[];if(!OCC[C.occ])return l;l.push('finanzkraft');slots().forEach((sl,i)=>{if(sl.fixed){l.push(sl.fixed);return}(C.occPick[i]||[]).forEach(p=>{if(validPick(p))l.push(p)})});return l}
+function occKeys(){return new Set(occKeyList())}
+function occDupes(){const l=occKeyList();return[...new Set(l.filter((k,i)=>l.indexOf(k)!==i))]}
+function occAltChoice(){const o=OCC[C.occ];if(!o||!o.f.alt)return null;if(o.f.alt.includes(C.occAlt))return C.occAlt;
+ let best=o.f.alt[0];o.f.alt.forEach(k=>{if((final(k)||0)>(final(best)||0))best=k});return best}
+function occTotal(){const o=OCC[C.occ];if(!o)return 0;let t=0;o.f.base.forEach(([k,m])=>t+=(final(k)||0)*m);const a=occAltChoice();if(a)t+=(final(a)||0)*2;return t}
+function formulaLabel(o){let s=o.f.base.map(([k,m])=>CH[k].a+' × '+m).join(' + ');if(o.f.alt)s+=' + ('+o.f.alt.map(k=>CH[k].a+' × 2').join(' oder ')+')';return s}
+function occSpent(){const ks=occKeys();let s=0;for(const[k,v]of Object.entries(C.occPts))if(ks.has(k))s+=+v||0;return s}
+function persTotal(){return(final('INT')||0)*2}
+function persSpent(){let s=0;for(const v of Object.values(C.persPts))s+=+v||0;return s}
+function occPart(k){return occKeys().has(k)?(+C.occPts[k]||0):0}
+function gainOf(k){return +(C.play&&C.play.gain&&C.play.gain[k])||0}
+function skillVal(k){return skillBase(k)+occPart(k)+(+C.persPts[k]||0)+gainOf(k)}
+function instances(){const out=[],seen=new Set();const add=k=>{if(seen.has(k))return;const[f,s]=splitKey(k);if(!SKM[f]||!okEra(SKM[f])||(SKM[f].spec&&!s))return;seen.add(k);out.push(k)};
+ SK.forEach(d=>{if(!okEra(d))return;if(!d.spec)add(d.id);else(d.def||[]).forEach(s=>add(d.id+':'+s))});
+ C.extraSpecs.forEach(add);occKeyList().forEach(add);Object.keys(C.persPts).forEach(add);
+ return out.sort((a,b)=>skillName(a).localeCompare(skillName(b),'de'))}
+function pruneOcc(){const ks=occKeys();for(const k of Object.keys(C.occPts))if(!ks.has(k))delete C.occPts[k]}
+function crRange(){const o=OCC[C.occ];return o?o.cr:[0,99]}
+function finances(cr){
+ if(era()==='modern'){
+  if(cr<=0)return{lvl:'Mittellos',cash:'10 $',assets:'keins',spend:'10 $'};
+  if(cr<=9)return{lvl:'Arm',cash:fmt(cr*20)+' $',assets:fmt(cr*200)+' $',spend:'40 $'};
+  if(cr<=49)return{lvl:'Durchschnittlich',cash:fmt(cr*40)+' $',assets:fmt(cr*1000)+' $',spend:'200 $'};
+  if(cr<=89)return{lvl:'Wohlhabend',cash:fmt(cr*100)+' $',assets:fmt(cr*10000)+' $',spend:'1.000 $'};
+  if(cr<=98)return{lvl:'Reich',cash:fmt(cr*400)+' $',assets:fmt(cr*40000)+' $',spend:'5.000 $'};
+  return{lvl:'Superreich',cash:'1 Mio. $',assets:'100 Mio. $ und mehr',spend:'100.000 $'}}
+ if(cr<=0)return{lvl:'Mittellos',cash:'0,50 $',assets:'keins',spend:'0,50 $'};
+ if(cr<=9)return{lvl:'Arm',cash:fmt(cr)+' $',assets:fmt(cr*10)+' $',spend:'2 $'};
+ if(cr<=49)return{lvl:'Durchschnittlich',cash:fmt(cr*2)+' $',assets:fmt(cr*50)+' $',spend:'10 $'};
+ if(cr<=89)return{lvl:'Wohlhabend',cash:fmt(cr*5)+' $',assets:fmt(cr*500)+' $',spend:'50 $'};
+ if(cr<=98)return{lvl:'Reich',cash:fmt(cr*20)+' $',assets:fmt(cr*2000)+' $',spend:'250 $'};
+ return{lvl:'Superreich',cash:'50.000 $',assets:'5 Mio. $ und mehr',spend:'5.000 $'}}
+function occName(){const o=OCC[C.occ];if(!o)return'';return o.custom&&C.occName?C.occName:o.n}
+
+/* ===================== Prüfungen ===================== */
+function charsIssues(){const out=[];const missing=ORDER.filter(k=>C.base[k]==null||C.base[k]==='');
+ if(missing.length)out.push(`Es fehlen noch ${missing.length} Eigenschaft${missing.length>1?'en':''} (${missing.map(k=>CH[k].a).join(', ')}).`);
+ if(C.method==='points'){const sum=ORDER.reduce((s,k)=>s+(+C.base[k]||0),0);if(!missing.length&&sum!==POINTBUY)out.push(`Punktekauf: ${sum} statt ${POINTBUY} Punkte verteilt.`);
+  ORDER.forEach(k=>{const v=C.base[k];if(v==null)return;const min=TWO.includes(k)?40:15;if(v<min||v>90)out.push(`${CH[k].a} muss zwischen ${min} und 90 liegen.`)})}
+ if(C.luck[0]==null)out.push('Glück ist noch nicht gewürfelt.');return out}
+function ageIssues(){const out=[];const B=band(C.age);const a=+C.age;if(!(a>=15&&a<=89))out.push('Das Alter muss zwischen 15 und 89 liegen.');
+ if(B.ded&&dedSum()!==B.ded)out.push(`Altersabzug: ${dedSum()} von ${B.ded} Punkten verteilt.`);
+ B.keys.forEach(k=>{const v=final(k);if(v!=null&&v<1)out.push(`${CH[k].a} darf nicht unter 1 fallen.`)});
+ if(B.checks){const done=C.eduChecks.slice(0,B.checks).filter(Boolean).length;if(done<B.checks)out.push(`Noch ${B.checks-done} Bildungs-Steigerungsprobe${B.checks-done>1?'n':''} offen.`)}
+ if(B.youth&&C.luck[0]!=null&&C.luck[1]==null)out.push('Jugendliche würfeln Glück ein zweites Mal.');return out}
+function occIssues(){const out=[];if(!OCC[C.occ]){out.push('Noch kein Beruf gewählt.');return out}
+ slots().forEach((sl,i)=>{if(sl.fixed)return;const p=C.occPick[i]||[];for(let j=0;j<sl.n;j++)if(!validPick(p[j])){out.push('Nicht alle Berufsfertigkeiten sind ausgewählt.');return}});
+ const d=occDupes();if(d.length)out.push(`Doppelt gewählt: ${d.map(skillName).join(', ')}.`);
+ if(OCC[C.occ].custom&&!C.occName.trim())out.push('Gib deinem eigenen Beruf einen Namen.');
+ return[...new Set(out)]}
+function occSkillIssues(){const out=[];if(!OCC[C.occ])return['Wähle zuerst einen Beruf.'];
+ const r=occTotal()-occSpent();if(r>0)out.push(`${r} Berufspunkte sind noch nicht verteilt.`);if(r<0)out.push(`${-r} Berufspunkte zu viel verteilt.`);
+ const cr=skillVal('finanzkraft'),[a,b]=crRange();if(cr<a||cr>b)out.push(`Finanzkraft ${cr} liegt außerhalb der Spanne ${a}–${b}.`);
+ occKeyList().forEach(k=>{if(skillVal(k)>99)out.push(`${skillName(k)} liegt über 99.`)});return[...new Set(out)]}
+function persIssues(){const out=[];const r=persTotal()-persSpent();if(r>0)out.push(`${r} Interessenpunkte sind noch nicht verteilt.`);if(r<0)out.push(`${-r} Interessenpunkte zu viel verteilt.`);
+ if(+C.persPts.mythos)out.push('Cthulhu-Mythos kann bei der Erschaffung nicht gesteigert werden.');
+ const cr=skillVal('finanzkraft'),[a,b]=crRange();if(OCC[C.occ]&&(cr<a||cr>b))out.push(`Finanzkraft ${cr} liegt außerhalb der Spanne ${a}–${b}.`);
+ instances().forEach(k=>{if(skillVal(k)>99)out.push(`${skillName(k)} liegt über 99.`)});return[...new Set(out)]}
+function stepIssues(i){switch(STEPS[i].id){
+ case'person':return C.info.name.trim()?[]:['Der Investigator braucht noch einen Namen.'];
+ case'chars':return charsIssues();
+ case'age':return allFinal()||C.base.EDU!=null?ageIssues():['Lege zuerst die Eigenschaften fest.'];
+ case'occ':return occIssues();
+ case'occskills':return occSkillIssues();
+ case'pers':return persIssues();
+ case'back':{const n=BACK.filter(b=>C.back[b.k]&&C.back[b.k].trim()).length;return n>=3?[]:['Fülle mindestens drei Hintergrund-Felder aus (empfohlen).']}
+ case'money':return OCC[C.occ]?[]:['Ergibt sich aus der Finanzkraft – wähle zuerst einen Beruf.'];
+ default:return[]}}
+function stepState(i){if(STEPS[i].id==='sheet'){for(let j=0;j<STEPS.length-1;j++)if(stepIssues(j).length)return'todo';return'done'}
+ const is=stepIssues(i);if(!is.length)return'done';
+ const bad=is.some(t=>/zu viel|über 99|außerhalb|Doppelt|muss zwischen|nicht unter|nicht gesteigert/.test(t));return bad?'warn':'todo'}
+
+/* ===================== Rendering ===================== */
+const wide=()=>{try{return matchMedia('(min-width: 781px)').matches}catch(e){return true}};
+const rule=(t,h)=>`<details class="rule"${wide()?' open':''}><summary class="rule-h">Regel · ${t}</summary>${h}</details>`;
+function dice(arr,type='d6',fresh){return arr.map(v=>`<span class="die ${type}${fresh?' fresh':''}">${v}</span>`).join('')}
+
+function renderHeader(){const eb=document.getElementById('eraEyebrow');if(eb)eb.textContent='Call of Cthulhu · 7. Edition · '+ERA[era()];const el=document.getElementById('switch');
+ el.innerHTML=ui.confirmDel?`<span>„${esc(C.info.name||'Unbenannt')}“ endgültig löschen?</span><button class="btn small danger" data-act="delYes">Löschen</button><button class="btn small ghost" data-act="delNo">Abbrechen</button><div class="savestate" id="savestate">${esc(status)}</div>`:
+ `<div class="seg modeseg" role="group" aria-label="Ansicht"><button data-act="mode" data-m="build" aria-pressed="${C.mode!=='play'}">Erstellen</button><button data-act="mode" data-m="play" aria-pressed="${C.mode==='play'}">Spielen</button></div>
+ <label class="sr" for="charSel" style="position:absolute;left:-9999px">Investigator wählen</label>
+ <select id="charSel" data-sel="char">${chars.map(c=>`<option value="${esc(c.id)}"${c.id===C.id?' selected':''}>${esc(c.info.name||'Unbenannter Investigator')}${c.occ&&OCC[c.occ]?' · '+esc(OCC[c.occ].custom&&c.occName?c.occName:OCC[c.occ].n):''}</option>`).join('')}</select>
+ <button class="btn small ghost hmore" data-act="hmenu" aria-expanded="${!!ui.hmenu}">${ui.hmenu?"Weniger":"Mehr …"}</button>
+ <div class="hacts${ui.hmenu?" open":""}"><button class="btn small" data-act="new">Neuer Investigator</button>
+ <button class="btn small ghost${ui.transfer?' on':''}" data-act="transfer" aria-expanded="${!!ui.transfer}" aria-controls="transfer">Sichern & Übertragen</button>
+ <button class="btn small ghost" data-act="del">Löschen</button></div>
+ <div class="savestate" id="savestate">${esc(status)}</div>`}
+
+function renderTransfer(){const el=document.getElementById('transfer');el.hidden=!ui.transfer;if(!ui.transfer)return;
+ const n=chars.length,one=esc(C.info.name||'Unbenannter Investigator');
+ const scope=`<div class="scope" role="radiogroup" aria-label="Umfang"><label><input type="radio" name="tscope" value="one"${ui.scope!=='all'?' checked':''}> Nur „${one}“</label><label><input type="radio" name="tscope" value="all"${ui.scope==='all'?' checked':''}> Alle ${n} Investigator${n>1?'en':''}</label></div>`;
+ const msg=(k)=>ui.tmsg&&ui.tmsg.k===k?`<div class="tmsg ${ui.tmsg.cls}" id="tmsg-${k}">${esc(ui.tmsg.t)}</div>`:`<div class="tmsg" id="tmsg-${k}"></div>`;
+ el.innerHTML=`<div class="transfer-h"><h2>Sichern & Übertragen</h2><button class="linkbtn" data-act="transfer">Schließen</button></div>
+ <p class="note" style="margin:0;max-width:72ch">Deine Investigatoren liegen nur in diesem Browser. Um sie auf ein anderes Gerät zu bringen oder zu sichern, kopiere die Daten oder speichere sie als Datei und lade sie dort wieder. Gleiche Investigatoren werden dabei nicht doppelt angelegt: Es bleibt die jeweils neuere Fassung.</p>
+ <div style="margin-top:12px">${scope}</div>
+ <div class="tcols">
+  <div class="tcol"><h3>Als Datei</h3>
+   <div class="row"><button class="btn" data-act="saveFile">Datei speichern</button><span class="note">.json-Datei, z. B. für Cloud-Ordner oder als Backup</span></div>
+   ${msg('save')}
+   <div class="drop" id="dropZone">Datei hierher ziehen oder
+    <label for="fileIn" class="linkbtn" style="display:inline;cursor:pointer">Datei auswählen</label>
+    <input type="file" id="fileIn" accept=".json,application/json,text/plain" multiple style="position:absolute;left:-9999px"></div>
+   ${msg('load')}</div>
+  <div class="tcol"><h3>Kopieren & Einfügen</h3>
+   <div class="row"><button class="btn" data-act="copyData">Daten kopieren</button><span class="note">z. B. per Mail oder Messenger senden</span></div>
+   ${msg('copy')}
+   <label for="pasteBox"><span class="lbl">Kopierte Daten hier einfügen</span><textarea id="pasteBox" class="exportbox" style="min-height:96px" placeholder="{ &quot;format&quot;: &quot;coc7-investigatoren&quot;, … }"></textarea></label>
+   <div class="row"><button class="btn small" data-act="importPaste">Einfügen & importieren</button></div>
+   ${msg('paste')}</div>
+ </div>`}
+
+function renderNav(){const el=document.getElementById('steps');
+ el.innerHTML=`<ol>${STEPS.map((s,i)=>`<li><button data-act="go" data-i="${i}"${C.step===i?' aria-current="step"':''}><span class="no">${String(i+1).padStart(2,'0')}</span><span>${s.t}</span><span class="dot ${stepState(i)}" title="${stepState(i)==='done'?'Erledigt':stepState(i)==='warn'?'Fehler':'Offen'}"></span></button></li>`).join('')}</ol>`}
+
+function centerStep(){const ol=document.querySelector('#steps ol'),b=ol&&ol.querySelector('[aria-current]');if(!b||ol.scrollWidth<=ol.clientWidth)return;ol.scrollLeft=b.offsetLeft-ol.clientWidth/2+b.offsetWidth/2}
+function renderMbar(){const el=document.getElementById('mbar');const d=derived();const i=C.step;
+ el.innerHTML=`<button class="btn ghost" data-act="go" data-i="${i-1}"${i===0?' disabled':''} aria-label="Zurück">←</button>
+ <button class="mbar-sheet" data-act="sheet" aria-expanded="${!!ui.sheet}" aria-controls="side"><span>${ui.sheet?'Bogen schließen':'Bogen ansehen'}</span><small>${(()=>{const open=(OCC[C.occ]?occTotal()-occSpent():0)+(final('INT')!=null?persTotal()-persSpent():0);return`TP ${d.hp??'–'} · STA ${d.san??'–'}${open?` · ${open} Pkt. offen`:''}`})()}</small></button>
+ ${i<STEPS.length-1?`<button class="btn" data-act="go" data-i="${i+1}">Weiter →</button>`:`<button class="btn" data-act="mode" data-m="play">Spielen →</button>`}`;
+ const side=document.getElementById('side');side.classList.toggle('open',!!ui.sheet);document.getElementById('sheetBack').hidden=!ui.sheet}
+function renderSide(){const el=document.getElementById('side');const d=derived();
+ const top=instances().filter(k=>k!=='finanzkraft'&&skillVal(k)>skillBase(k)).sort((a,b)=>skillVal(b)-skillVal(a)).slice(0,6);
+ const oR=occTotal()-occSpent(),pR=persTotal()-persSpent();
+ el.innerHTML=`<div class="sheet-close"><button class="linkbtn" data-act="sheet">Schließen</button></div><div class="sheetcard">
+  <div class="eyebrow">Laufender Bogen</div>
+  <h3>${esc(C.info.name||'Unbenannter Investigator')}</h3>
+  <div class="sub">${esc([occName(),C.age?C.age+' Jahre':'',C.info.residence].filter(Boolean).join(' · ')||'Noch ohne Beruf')}</div>
+  <div class="mini">${ORDER.map(k=>`<div><small>${CH[k].a}</small><b>${final(k)??'–'}</b></div>`).join('')}</div>
+  <div class="derived">
+   <div><span>Trefferpunkte</span><b>${d.hp??'–'}</b></div><div><span>Magiepunkte</span><b>${d.mp??'–'}</b></div>
+   <div><span>Stabilität</span><b>${d.san??'–'}</b></div><div><span>Glück</span><b>${d.luck??'–'}</b></div>
+   <div><span>Bewegung</span><b>${d.mov??'–'}</b></div><div><span>Schadensbonus</span><b>${d.db??'–'}</b></div>
+   <div><span>Statur</span><b>${d.build??'–'}</b></div><div><span>Ausweichen</span><b>${skillVal('ausweichen')||'–'}</b></div>
+  </div></div>
+  <div class="sheetcard">
+   <div class="eyebrow">Fertigkeitspunkte</div>
+   <div class="derived" style="grid-template-columns:1fr">
+    <div><span>Beruf verbleibend</span><b class="${oR<0?'neg':''}">${OCC[C.occ]?oR+' / '+occTotal():'–'}</b></div>
+    <div><span>Interessen verbleibend</span><b class="${pR<0?'neg':''}">${final('INT')!=null?pR+' / '+persTotal():'–'}</b></div>
+   </div>
+   ${top.length?`<div class="eyebrow" style="margin-top:12px">Stärkste Fertigkeiten</div><ul class="toplist">${top.map(k=>`<li><span>${esc(skillName(k))}</span><b>${skillVal(k)}</b></li>`).join('')}</ul>`:''}
+  </div>`}
+
+function renderMain(){const el=document.getElementById('main');const s=STEPS[C.step];
+ const body={person:stepPerson,chars:stepChars,age:stepAge,occ:stepOcc,occskills:stepOccSkills,pers:stepPers,back:stepBack,money:stepMoney,sheet:stepSheet}[s.id]();
+ const is=s.id==='sheet'?[]:stepIssues(C.step);
+ const prev=C.step>0?`<button class="btn ghost" data-act="go" data-i="${C.step-1}">← ${STEPS[C.step-1].t}</button>`:'<span></span>';
+ const next=C.step<STEPS.length-1?`<button class="btn" data-act="go" data-i="${C.step+1}">Weiter: ${STEPS[C.step+1].t} →</button>`:'';
+ el.innerHTML=`<div class="stephead"><span class="no">Schritt ${C.step+1} von ${STEPS.length}</span></div>
+ <div class="stephead"><h2>${s.t}</h2></div>${body}
+ <div class="foot">${prev}<div class="row">${is.length?`<span class="note" id="footissue">${esc(is[0])}</span>`:''}${next}</div></div>`;
+ ui.fresh=null}
+
+function field(path,label,ph,type='text'){const v=path.split('.').reduce((o,k)=>o?.[k],C);const id='f-'+path.replace(/\./g,'-');
+ return`<label for="${id}"><span class="lbl">${label}</span><input id="${id}" type="${type}" data-bind="${path}" value="${esc(v)}" placeholder="${esc(ph||'')}"></label>`}
+
+function stepPerson(){return`<p class="lede">Dieser Builder führt dich durch die Erschaffung eines Investigators nach den Regeln der 7. Edition. Jeder Schritt erklärt die Regel, würfelt und rechnet für dich mit. Den aktuellen Stand zeigt dir jederzeit der laufende Bogen – auf großen Bildschirmen rechts, auf Handy und Tablet über „Bogen ansehen“.</p>
+ <div class="row" style="margin-bottom:16px"><button class="btn" data-act="randAll">${DI} Kompletten Investigator würfeln</button><button class="btn ghost" data-act="randPerson">${DI} Personalien würfeln</button></div>
+ ${ui.confirmAll?`<div class="confirm" style="margin-bottom:16px"><span>Dabei werden alle bisherigen Angaben dieses Investigators überschrieben.</span><button class="btn small danger" data-act="randAllYes">${DI} Würfeln</button><button class="btn small ghost" data-act="randAllNo">Abbrechen</button></div>`:''}
+ <div style="margin-bottom:18px"><span class="lbl">Epoche</span>
+  <div class="seg" role="group" aria-label="Epoche">${Object.entries(ERA).map(([k,n])=>`<button data-act="era" data-v="${k}" aria-pressed="${era()===k}">${n}</button>`).join('')}</div>
+  <p class="note" style="margin:6px 0 0;max-width:66ch">${era()==='modern'?'Gegenwart: zusätzlich Computernutzung und Elektronik, Berufe wie IT-Fachkraft oder Rettungssanitäter, Finanzen in heutigen Dollar.':'Klassisches Setting der 1920er Jahre, wie in Lovecrafts Geschichten.'}</p>
+  ${ui.eraConfirm?`<div class="confirm"><span>Beim Wechsel zu „${ERA[ui.eraConfirm]}“ wird entfernt, was es dort nicht gibt: ${esc(eraConflicts(ui.eraConfirm).join(', '))}.</span><button class="btn small danger" data-act="eraYes">Wechseln</button><button class="btn small ghost" data-act="eraNo">Abbrechen</button></div>`:''}</div>
+ <div class="form-grid">
+  ${field('info.name','Name','z. B. Dr. Clara Wendt')}
+  ${field('info.player','Spieler/in','Dein Name')}
+  ${field('info.gender','Geschlecht','')}
+  ${field('info.residence','Wohnort','z. B. Arkham, Massachusetts')}
+  ${field('info.birthplace','Geburtsort','z. B. Bremen')}
+ </div>
+ ${rule('Ablauf',`<p>Ein Investigator entsteht in dieser Reihenfolge:</p><ol>
+  <li><b>Eigenschaften</b> würfeln oder verteilen, dazu Glück.</li>
+  <li><b>Alter</b> wählen: Es verändert Eigenschaften, Bildung und Bewegung.</li>
+  <li><b>Beruf</b> wählen: Er legt acht Berufsfertigkeiten und die Finanzkraft-Spanne fest.</li>
+  <li><b>Berufspunkte</b> (meist BI × 4) auf diese Fertigkeiten verteilen.</li>
+  <li><b>Interessenpunkte</b> (IN × 2) auf beliebige Fertigkeiten verteilen.</li>
+  <li><b>Hintergrund</b> und <b>Besitz</b> festhalten.</li></ol>
+  <p>Abgeleitete Werte wie Trefferpunkte oder Schadensbonus berechnet der Builder automatisch.</p>`)}
+ ${rule('Epoche',`<p>Die Regeln sind in beiden Epochen gleich. In der Gegenwart kommen die Fertigkeiten <b>Computernutzung</b> (5 %) und <b>Elektronik</b> (1 %) hinzu, außerdem Berufe der heutigen Zeit. Die Finanzkraft wird in heutigen Dollar umgerechnet.</p>`)}`}
+
+function stepChars(){const m=C.method;
+ const seg=`<div class="seg" role="group" aria-label="Methode">${[['roll','Würfeln'],['array','Feste Werte verteilen'],['points','Punkte kaufen']].map(([k,t])=>`<button data-act="method" data-m="${k}" aria-pressed="${m===k}">${t}</button>`).join('')}</div>`;
+ const confirm=ui.pendingMethod?`<div class="confirm"><span>Beim Wechsel der Methode werden die bisherigen Eigenschaftswerte gelöscht.</span><button class="btn small danger" data-act="methodYes">Wechseln</button><button class="btn small ghost" data-act="methodNo">Abbrechen</button></div>`:'';
+ let intro='',cards='';
+ if(m==='roll'){intro=`<div class="row" style="margin-top:14px"><button class="btn" data-act="rollAll">${DI} Alle Eigenschaften würfeln</button><span class="note">Oder echte Würfelergebnisse direkt eintragen.</span></div>`;
+  cards=ORDER.map(k=>{const r=C.rolls[k];return`<div class="ccard">
+   <div class="ccard-h"><span class="abbr">${CH[k].a}</span><span class="cname">${CH[k].n}</span></div>
+   <div class="ccard-f">${CH[k].f}</div>
+   <div class="ccard-v"><input type="number" id="c-${k}" data-char="${k}" min="1" max="99" inputmode="numeric" value="${C.base[k]??''}" aria-label="${CH[k].n}"><button class="btn small ghost" data-act="roll" data-k="${k}" aria-label="${CH[k].n} würfeln">${DI}<span class="bl"> Würfeln</span></button></div>
+   <div class="dice">${r?dice(r,'d6',ui.fresh==='all'||ui.fresh===k)+(TWO.includes(k)?' +6':'')+' → ×5':''}</div>
+   <div class="hf">½ <span data-live="bh:${k}"></span> · ⅕ <span data-live="bf:${k}"></span></div>
+   <p class="cdesc">${CH[k].d}</p></div>`}).join('')}
+ if(m==='array'){intro=`<p class="note" style="margin-top:14px">Verteile die Werte 80, 70, 60, 60, 50, 50, 50 und 40 – jeder Wert genau einmal.</p>`;
+  const used={};ORDER.forEach(k=>{if(C.base[k]!=null)used[C.base[k]]=(used[C.base[k]]||0)+1});
+  const avail={};ARRAY.forEach(v=>avail[v]=(avail[v]||0)+1);
+  cards=ORDER.map(k=>`<div class="ccard"><div class="ccard-h"><span class="abbr">${CH[k].a}</span><span class="cname">${CH[k].n}</span></div>
+   <div class="ccard-v"><select id="a-${k}" data-sel="arr" data-k="${k}" aria-label="${CH[k].n}"><option value="">–</option>${[80,70,60,50,40].map(v=>{const left=avail[v]-(used[v]||0);const mine=C.base[k]===v;return`<option value="${v}"${mine?' selected':''}${!mine&&left<=0?' disabled':''}>${v}${!mine&&left>0&&avail[v]>1?` (${left}×)`:''}</option>`}).join('')}</select></div>
+   <div class="hf">½ <span data-live="bh:${k}"></span> · ⅕ <span data-live="bf:${k}"></span></div><p class="cdesc">${CH[k].d}</p></div>`).join('')}
+ if(m==='points'){intro=`<div class="row" style="margin-top:14px"><div class="counter"><b data-live="pb-rem" data-sign></b><span>von ${POINTBUY} Punkten übrig</span></div><span class="note">Jede Eigenschaft 15–90; GR, IN und BI mindestens 40.</span></div>`;
+  cards=ORDER.map(k=>{const min=TWO.includes(k)?40:15;return`<div class="ccard"><div class="ccard-h"><span class="abbr">${CH[k].a}</span><span class="cname">${CH[k].n}</span></div>
+   <div class="ccard-f">${min}–90</div>
+   <div class="ccard-v stepper"><button data-act="cstep" data-k="${k}" data-d="-5" aria-label="${CH[k].a} −5">−</button><input type="number" id="p-${k}" data-char="${k}" min="${min}" max="90" step="5" inputmode="numeric" value="${C.base[k]??''}" aria-label="${CH[k].n}"><button data-act="cstep" data-k="${k}" data-d="5" aria-label="${CH[k].a} +5">+</button></div>
+   <div class="hf">½ <span data-live="bh:${k}"></span> · ⅕ <span data-live="bf:${k}"></span></div><p class="cdesc">${CH[k].d}</p></div>`}).join('')}
+ const ld=C.luckDice[0];
+ const luckCard=`<div class="block"><h3>Glück</h3><div class="ccard" style="max-width:340px">
+   <div class="ccard-f">3W6 × 5 · wird bei jeder Methode gewürfelt</div>
+   <div class="ccard-v"><input type="number" id="luck0" data-luck="0" min="1" max="99" inputmode="numeric" value="${C.luck[0]??''}" aria-label="Glück"><button class="btn small ghost" data-act="rollLuck" data-i="0">${DI} Würfeln</button></div>
+   <div class="dice">${ld?dice(ld,'d6',ui.fresh==='luck0')+' → ×5':''}</div></div></div>`;
+ return`<p class="lede">Acht Eigenschaften beschreiben Körper und Geist deines Investigators. Jeder Wert wird in drei Stufen genutzt: normal, schwierig (½) und extrem (⅕).</p>
+ ${seg}${confirm}${intro}<div class="chars" style="margin-top:14px">${cards}</div>${luckCard}
+ ${rule('Eigenschaften',`<p><b>Würfeln:</b> ST, KO, GE, ER und MA mit 3W6 × 5; GR, IN und BI mit (2W6 + 6) × 5.</p><p><b>Feste Werte:</b> 80, 70, 60, 60, 50, 50, 50, 40 frei zuordnen.</p><p><b>Punkte kaufen:</b> ${POINTBUY} Punkte verteilen, jeweils 15–90.</p><p>Ob schlechte Würfe wiederholt werden dürfen, entscheidet die Spielleitung.</p>`)}`}
+
+function stepAge(){const B=band(C.age);
+ if(C.base.EDU==null&&!allFinal())return`<p class="lede">Lege zuerst die Eigenschaften fest. Das Alter verändert sie danach.</p><button class="btn" data-act="go" data-i="1">Zu den Eigenschaften</button>`;
+ const bandRows=BANDS.map(([from,l,a,e,x])=>`<tr class="${l===B.lbl?'hl':''}"><td class="num">${l}</td><td>${a}</td><td>${e}</td><td>${x||'–'}</td></tr>`).join('');
+ let ded='';
+ if(B.ded){ded=`<div class="block"><h3>Altersabzüge</h3><p class="note">Ziehe insgesamt <b>${B.ded}</b> Punkte von ${B.keys.map(k=>CH[k].n).join(B.keys.length>2?', ':' und ').replace(/, ([^,]*)$/,' und $1')} ab – frei verteilt.</p>
+  <div class="row" style="margin:8px 0"><div class="counter"><b data-live="ded-rem" data-sign></b><span>Punkte noch abzuziehen</span></div><button class="btn small ghost" data-act="dedEven">Gleichmäßig verteilen</button><button class="btn small ghost" data-act="dedRand">${DI} Zufällig verteilen</button></div>
+  <div class="tablewrap" style="padding:4px 12px">${B.keys.map(k=>`<div class="dedrow"><span><b>${CH[k].a}</b> ${CH[k].n}</span><span class="num note">${C.base[k]??'–'}</span>
+   <span class="stepper"><button data-act="dstep" data-k="${k}" data-d="-1" aria-label="Abzug verringern">−</button><input type="number" id="d-${k}" data-ded="${k}" min="0" value="${C.ageDed[k]||0}" inputmode="numeric" aria-label="Abzug ${CH[k].n}"><button data-act="dstep" data-k="${k}" data-d="1" aria-label="Abzug erhöhen">+</button></span>
+   <span class="num"><b data-live="c:${k}"></b></span></div>`).join('')}</div></div>`}
+ const app=B.app?`<p>Erscheinung sinkt um ${B.app}: <b>${C.base.APP??'–'}</b> → <b>${final('APP')??'–'}</b>.</p>`:'';
+ const youth=B.youth?`<p>Bildung sinkt um 5: <b>${C.base.EDU??'–'}</b> → <b>${final('EDU')??'–'}</b>.</p>`:'';
+ let checks='';
+ if(B.checks){const rows=[];for(let i=0;i<B.checks;i++){const c=C.eduChecks[i];
+  if(c)rows.push(`<div class="check"><span class="note">Probe ${i+1}</span><span class="die d100">${c.roll}</span><span>gegen BI ${eduBefore(i)}</span><span>${c.gain?`<b class="okline">Erfolg: +${c.gain}</b> (1W10)`:'kein Anstieg'}</span></div>`);
+  else if(i===C.eduChecks.length)rows.push(`<div class="check"><span class="note">Probe ${i+1}</span><button class="btn small" data-act="eduCheck">${DI} W100 würfeln</button>${B.checks-i>1?`<button class="btn small ghost" data-act="eduAll">Alle restlichen würfeln</button>`:''}<span class="note">Liegt der Wurf über BI ${eduBefore(i)}, steigt BI um 1W10.</span></div>`)}
+  checks=`<div class="block"><h3>Bildungs-Steigerungsproben</h3><p class="note">In deinem Alter stehen dir ${B.checks} Probe${B.checks>1?'n':''} zu. Bildung kann dabei nicht über 99 steigen.</p><div class="checks">${rows.join('')}</div>
+  ${C.eduChecks.length?`<p style="margin-top:8px">Bildung jetzt: <b data-live="c:EDU"></b> <button class="linkbtn" data-act="eduReset">Proben zurücksetzen</button></p>`:''}</div>`}
+ const youthLuck=B.youth?`<div class="block"><h3>Zweiter Glückswurf</h3><p class="note">Jugendliche würfeln Glück zweimal und behalten den höheren Wert.</p>
+  <div class="row"><span>1. Wurf: <b>${C.luck[0]??'–'}</b></span><span>2. Wurf:</span><input type="number" id="luck1" data-luck="1" style="width:76px" value="${C.luck[1]??''}" aria-label="Zweiter Glückswurf"><button class="btn small ghost" data-act="rollLuck" data-i="1">${DI} Würfeln</button><span class="dice">${C.luckDice[1]?dice(C.luckDice[1],'d6',ui.fresh==='luck1'):''}</span><span>Ergebnis: <b>${luck()??'–'}</b></span></div></div>`:'';
+ const m=mov();
+ return`<p class="lede">Junge Investigatoren sind kräftiger, ältere gebildeter. Wähle ein Alter zwischen 15 und 89; der Builder zeigt, was sich dadurch ändert.</p>
+ <div class="row"><label for="age"><span class="lbl">Alter</span><input type="number" id="age" data-bind="age" data-num data-rr min="15" max="89" value="${esc(C.age)}" style="width:96px;font-size:20px"></label><div class="counter"><span>Altersgruppe</span><b>${B.lbl}</b></div>
+  <button class="btn ghost" data-act="randAge">${DI} Alter würfeln</button>${C.ageDice?`<span class="rollnote">15 + 2W20: ${dice(C.ageDice,'d10',ui.fresh==='age')} = ${15+C.ageDice[0]+C.ageDice[1]}</span>`:''}</div>
+ <p class="note" style="margin-top:6px">Gewürfelt wird 15 + 2W20 (17–55 Jahre). Dabei werden Altersabzüge zufällig verteilt und ein nötiger zweiter Glückswurf gleich mit erledigt.</p>
+ <div class="block"><div class="tablewrap"><table class="bands"><thead><tr><th>Alter</th><th>Eigenschaften</th><th>BI-Proben</th><th>Sonstiges</th></tr></thead><tbody>${bandRows}</tbody></table></div></div>
+ ${ded}${app||youth?`<div class="block"><h3>Weitere Änderungen</h3>${app}${youth}</div>`:''}${checks}${youthLuck}
+ <div class="block"><h3>Bewegungsweite</h3><p>BW <b>${m??'–'}</b>${B.mov?` (Grundwert ${m+B.mov}, −${B.mov} durch Alter)`:''}.</p></div>
+ ${rule('Bewegungsweite',`<p>Sind ST und GE beide kleiner als GR: BW 7. Sind beide größer als GR: BW 9. Sonst BW 8. Ab 40 Jahren sinkt die BW pro Jahrzehnt um 1.</p>`)}`}
+
+function pickUI(sl,i,j){const p=(C.occPick[i]||[])[j]||'';const[f,s]=splitKey(p);
+ let sel='';if(p){if(sl.opts.includes(p))sel=p;else if(sl.opts.includes(f+':*'))sel=f+':*'}
+ const single=sl.opts.length===1;if(single)sel=sl.opts[0];
+ const needsSpec=sel.endsWith(':*');const fam=needsSpec?sel.slice(0,-2):'';
+ const select=single?`<span>${esc(SKM[fam].n)}:</span>`:`<select id="pk-${i}-${j}" data-sel="pick" data-i="${i}" data-j="${j}" aria-label="Fertigkeit wählen"><option value="">– wählen –</option>${sl.opts.map(o=>`<option value="${esc(o)}"${o===sel?' selected':''}>${esc(optLabel(o))}</option>`).join('')}</select>`;
+ const spec=needsSpec?`<input id="sp-${i}-${j}" data-spec="${i}|${j}|${fam}" list="dl-${fam}" value="${esc(f===fam?s:'')}" placeholder="Spezialisierung, z. B. ${esc((SKM[fam].sugg||[''])[0])}" aria-label="Spezialisierung">`:'';
+ return`<span class="pick">${select}${spec}</span>`}
+
+function stepOcc(){const o=OCC[C.occ];
+ const datalists=SK.filter(d=>d.spec).map(d=>`<datalist id="dl-${d.id}">${(d.sugg||[]).map(s=>`<option value="${esc(s)}">`).join('')}</datalist>`).join('');
+ const sel=`<label for="occSel"><span class="lbl">Beruf</span><select id="occSel" data-sel="occ"><option value="">– Beruf wählen –</option>${occIds().map(id=>`<option value="${id}"${id===C.occ?' selected':''}>${esc(OCC[id].n)}</option>`).join('')}</select></label>`;
+ const nOcc=occIds().filter(id=>!OCC[id].custom).length;
+ const rollBtn=`<button class="btn ghost" data-act="randOcc">${DI} Beruf würfeln (1W${nOcc})</button>`;
+ if(!o)return`<p class="lede">Der Beruf bestimmt, worin dein Investigator ausgebildet ist und wie viel Geld er hat. Wähle aus der Liste, direkt eine Karte – oder lass die Würfel entscheiden.</p><div class="row" style="align-items:flex-end">${sel}${rollBtn}</div>
+  <div class="occgrid block">${occIds().map(id=>`<button class="occbtn" data-act="pickOcc" data-o="${id}"><strong>${esc(OCC[id].n)}${OCC[id].era?'<span class="tag">Gegenwart</span>':''}</strong><span>${formulaLabel(OCC[id])}</span><span>Finanzkraft ${OCC[id].cr[0]}–${OCC[id].cr[1]}</span></button>`).join('')}</div>${occRule()}`;
+ const alt=occAltChoice();
+ const altSel=o.f.alt?`<label for="occAlt"><span class="lbl">Zweite Eigenschaft</span><select id="occAlt" data-sel="occAlt">${o.f.alt.map(k=>`<option value="${k}"${k===alt?' selected':''}>${CH[k].n} (${CH[k].a} ${final(k)??'–'} × 2 = ${(final(k)||0)*2})</option>`).join('')}</select></label>`:'';
+ const sl=slots();
+ const list=sl.map((s,i)=>{if(s.fixed)return`<li><span class="sn">${i+1}</span><div>${esc(skillName(s.fixed))}</div></li>`;
+  const label=s.any?`${s.n} beliebige Fertigkeit${s.n>1?'en':''} nach Wahl`:s.lbl?`${s.n} ${s.n>1?'zwischenmenschliche Fertigkeiten':'zwischenmenschliche Fertigkeit'} (Charme, Einschüchtern, Überreden, Überzeugen)`:s.opts.length===1?`${SKM[s.opts[0].slice(0,-2)].n} – Spezialisierung wählen`:`${s.n>1?s.n+' aus':'Eine aus'}: ${s.opts.map(optLabel).join(' / ')}`;
+  const picks=[];for(let j=0;j<s.n;j++)picks.push(pickUI(s,i,j));
+  return`<li><span class="sn">${i+1}</span><div><div>${esc(label)}</div><div class="picks">${picks.join('')}</div></div></li>`}).join('');
+ const dup=occDupes();
+ return`<p class="lede">Der Beruf bestimmt, worin dein Investigator ausgebildet ist und wie viel Geld er hat.</p>${datalists}
+ <div class="row" style="align-items:flex-end">${sel}${o.custom?field('occName','Bezeichnung','z. B. Fotograf'):''}${rollBtn}${C.occRoll&&!o.custom?`<span class="rollnote">1W${nOcc}: <span class="die d100${ui.fresh==='occ'?' fresh':''}">${C.occRoll}</span></span>`:''}</div>
+ <div class="occdetail block"><h3 style="font-family:var(--head);font-size:26px;margin:0">${esc(occName())}</h3><p style="margin:4px 0 0">${esc(o.d)}</p>
+  <div class="facts"><div class="fact"><span class="lbl">Formel</span><div>${formulaLabel(o)}</div></div>
+   <div class="fact"><span class="lbl">Berufspunkte</span><b>${occTotal()}</b></div>
+   <div class="fact"><span class="lbl">Finanzkraft</span><b>${o.cr[0]}–${o.cr[1]}</b></div></div>
+  ${altSel?`<div style="margin-bottom:14px">${altSel}</div>`:''}
+  <div class="row" style="justify-content:space-between;margin-bottom:4px"><span class="lbl" style="margin:0">Berufsfertigkeiten</span>${sl.some(s=>!s.fixed)?`<span class="row" style="gap:8px"><button class="btn small ghost" data-act="randPicks" data-all="0">${DI} Offene Auswahl würfeln</button><button class="btn small ghost" data-act="randPicks" data-all="1">Alle neu würfeln</button></span>`:''}</div>
+  <ul class="slots">${list}<li><span class="sn">+</span><div>Finanzkraft <span class="note">(immer Berufsfertigkeit)</span></div></li></ul>
+  ${dup.length?`<p class="warnline">Doppelt gewählt: ${dup.map(k=>esc(skillName(k))).join(', ')}. Wähle stattdessen eine andere Fertigkeit.</p>`:''}
+ </div>
+ <p class="note">Ein Berufswechsel setzt die bereits verteilten Berufspunkte zurück.</p>${occRule()}`}
+function occRule(){return rule('Beruf',`<p>Jeder Beruf hat eine Formel für die Berufspunkte (meist BI × 4) und acht Berufsfertigkeiten. Wo eine Auswahl steht, entscheidest du. Finanzkraft gilt immer zusätzlich als Berufsfertigkeit und muss am Ende in der Spanne des Berufs liegen.</p>`)}
+
+function ptsRow(k,pool,opts={}){const b=skillBase(k);const v=+C[pool+'Pts'][k]||0;const isOcc=occKeys().has(k);
+ const dis=opts.disabled;
+ return`<tr data-row="${esc(k)}" data-name="${esc(skillName(k).toLowerCase())}">
+  <td>${esc(skillName(k))}${pool==='pers'&&isOcc?'<span class="tag" title="Berufsfertigkeit">Beruf</span>':''}${opts.extra||''}</td>
+  <td class="num">${b}</td>
+  ${pool==='pers'?`<td class="num">${occPart(k)||''}</td>`:''}
+  <td class="num"><span class="stepper"><button data-act="pstep" data-pool="${pool}" data-k="${esc(k)}" data-d="-5" aria-label="${esc(skillName(k))} −5"${dis?' disabled':''}>−</button><input type="number" data-pts="${pool}|${esc(k)}" id="${pool}-${esc(k).replace(/[^a-z0-9]/gi,'_')}" min="0" value="${v||''}" placeholder="0" inputmode="numeric" aria-label="Punkte ${esc(skillName(k))}"${dis?' disabled':''}><button data-act="pstep" data-pool="${pool}" data-k="${esc(k)}" data-d="5" aria-label="${esc(skillName(k))} +5"${dis?' disabled':''}>+</button></span></td>
+  <td class="num val" data-live="v:${esc(k)}"></td><td class="num" data-live="vh:${esc(k)}"></td><td class="num" data-live="vf:${esc(k)}"></td></tr>`}
+
+function stepOccSkills(){if(!OCC[C.occ])return`<p class="lede">Wähle zuerst einen Beruf.</p><button class="btn" data-act="go" data-i="3">Zum Beruf</button>`;
+ if(occIssues().length)return`<p class="lede">Die Berufswahl ist noch nicht vollständig: ${esc(occIssues()[0])}</p><button class="btn" data-act="go" data-i="3">Zurück zum Beruf</button>`;
+ const [a,b]=crRange();
+ const keys=[...occKeys()].sort((x,y)=>x==='finanzkraft'?1:y==='finanzkraft'?-1:skillName(x).localeCompare(skillName(y),'de'));
+ return`<p class="lede">Verteile ${occTotal()} Berufspunkte auf die Fertigkeiten deines Berufs. Die Punkte kommen zum Basiswert hinzu.</p>
+ <div class="sticky-counter"><div class="counter"><b data-live="occ-rem" data-sign></b><span>von ${occTotal()} Berufspunkten übrig</span></div><span class="note">Finanzkraft muss zwischen ${a} und ${b} liegen.</span></div>
+ <div class="row" style="margin-bottom:12px"><button class="btn ghost small" data-act="randOccPts">${DI} Punkte zufällig verteilen</button><button class="btn ghost small" data-act="rollCR">${DI} Nur Finanzkraft würfeln (${a}–${b})</button><button class="linkbtn" data-act="resetPts" data-pool="occ">Alle Berufspunkte zurücksetzen</button></div>
+ <div class="tablewrap"><table><thead><tr><th>Fertigkeit</th><th class="num">Basis</th><th class="num">Beruf</th><th class="num">Wert</th><th class="num">½</th><th class="num">⅕</th></tr></thead>
+ <tbody>${keys.map(k=>ptsRow(k,'occ',{extra:k==='finanzkraft'?` <span class="note">(${a}–${b})</span>`:''})).join('')}</tbody></table></div>
+ ${rule('Berufspunkte',`<p>Berufspunkte dürfen nur auf Berufsfertigkeiten verteilt werden. Kein Fertigkeitswert darf 99 übersteigen; viele Spielleitungen begrenzen Startwerte zusätzlich, etwa auf 75. Cthulhu-Mythos lässt sich nicht steigern.</p><p>Die Finanzkraft bestimmt Lebensstandard, Bargeld und Vermögen (Schritt 8).</p>`)}`}
+
+function stepPers(){if(final('INT')==null)return`<p class="lede">Lege zuerst die Eigenschaften fest.</p>`;
+ const keys=instances();const specFams=SK.filter(d=>d.spec&&okEra(d));
+ return`<p class="lede">Mit ${persTotal()} Interessenpunkten (IN × 2) gestaltest du Hobbys und Eigenheiten. Sie dürfen auf jede Fertigkeit gehen, auch auf Berufsfertigkeiten.</p>
+ <div class="sticky-counter"><div class="counter"><b data-live="pers-rem" data-sign></b><span>von ${persTotal()} Interessenpunkten übrig</span></div>
+  <label for="skillSearch" style="flex:1;min-width:160px"><input id="skillSearch" type="search" placeholder="Fertigkeit suchen …" value="${esc(ui.search)}" style="width:100%"></label></div>
+ <div class="row" style="margin-bottom:12px"><button class="btn ghost small" data-act="randPersPts">${DI} Punkte zufällig verteilen</button><button class="linkbtn" data-act="resetPts" data-pool="pers">Alle Interessenpunkte zurücksetzen</button><span class="note">Der Zufall setzt Schwerpunkte auf 5–8 Fertigkeiten.</span></div>
+ <div class="tablewrap"><table><thead><tr><th>Fertigkeit</th><th class="num">Basis</th><th class="num">Beruf</th><th class="num">Interessen</th><th class="num">Wert</th><th class="num">½</th><th class="num">⅕</th></tr></thead>
+ <tbody>${keys.map(k=>{const extra=C.extraSpecs.includes(k)&&!occKeys().has(k)&&!(+C.persPts[k])?` <button class="x" data-act="rmSpec" data-k="${esc(k)}" aria-label="Entfernen" title="Entfernen">×</button>`:'';
+  return ptsRow(k,'pers',{disabled:k==='mythos',extra})}).join('')}</tbody></table></div>
+ <div class="block"><h3>Spezialisierung hinzufügen</h3><p class="note">Etwa eine weitere Fremdsprache, ein Handwerk oder eine Wissenschaft.</p>
+  <div class="row"><select id="specFam" aria-label="Fertigkeit">${specFams.map(d=>`<option value="${d.id}">${d.n}</option>`).join('')}</select>
+  <input id="specName" list="dl-all-spec" placeholder="z. B. Französisch" aria-label="Spezialisierung"><datalist id="dl-all-spec">${[...new Set(specFams.flatMap(d=>d.sugg||[]))].map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+  <button class="btn small" data-act="addSpec">Hinzufügen</button><span class="note" id="specMsg"></span></div></div>
+ ${rule('Persönliche Interessen',`<p>IN × 2 Punkte, frei verteilbar – außer auf Cthulhu-Mythos. Auch hier gilt: kein Wert über 99.</p>`)}`}
+
+function stepBack(){return`<p class="lede">Der Hintergrund macht aus Zahlen eine Person. Schreib frei oder lass dir einen Vorschlag würfeln und pass ihn an.</p>
+ <div class="row" style="margin-bottom:16px"><button class="btn ghost" data-act="randBack" data-all="0">${DI} Leere Felder würfeln</button><button class="btn ghost" data-act="randBack" data-all="1">Alle Felder neu würfeln</button></div>
+ <div class="backgrid">${BACK.map(b=>`<div class="bfield"><div class="bfield-h"><label for="b-${b.k}"><span class="lbl" style="margin:0">${b.n}</span></label>
+  <span class="row" style="gap:10px">${backSugg(b).length?`<button class="linkbtn" data-act="suggest" data-k="${b.k}">Vorschlag würfeln</button>`:''}${b.k!=='scars'&&b.k!=='phobias'?`<label class="keyc"><input type="radio" name="keyc" data-key="${b.k}"${C.keyConn===b.k?' checked':''}> Schlüsselverbindung</label>`:''}</span></div>
+  <textarea id="b-${b.k}" data-bind="back.${b.k}" placeholder="${b.k==='scars'||b.k==='phobias'?'Meist zu Beginn leer – füllt sich im Spiel.':''}">${esc(C.back[b.k])}</textarea></div>`).join('')}</div>
+ ${rule('Schlüsselverbindung',`<p>Markiere einen Eintrag als Schlüsselverbindung: das, was deinem Investigator am wichtigsten ist. Bei einem Anfall von Wahnsinn kann sie ihm Halt geben – oder genau sie zerbricht.</p>`)}`}
+
+function stepMoney(){if(!OCC[C.occ])return`<p class="lede">Wähle zuerst einen Beruf; die Finanzen ergeben sich aus der Finanzkraft.</p>`;
+ const cr=skillVal('finanzkraft');const f=finances(cr);
+ const levels=era()==='modern'?[['0','Mittellos','10 $','keins','10 $'],['1–9','Arm','FK × 20','FK × 200','40 $'],['10–49','Durchschnittlich','FK × 40','FK × 1.000','200 $'],['50–89','Wohlhabend','FK × 100','FK × 10.000','1.000 $'],['90–98','Reich','FK × 400','FK × 40.000','5.000 $'],['99','Superreich','1 Mio. $','100 Mio. $+','100.000 $']]:[['0','Mittellos','0,50 $','keins','0,50 $'],['1–9','Arm','FK × 1','FK × 10','2 $'],['10–49','Durchschnittlich','FK × 2','FK × 50','10 $'],['50–89','Wohlhabend','FK × 5','FK × 500','50 $'],['90–98','Reich','FK × 20','FK × 2.000','250 $'],['99','Superreich','50.000 $','5 Mio. $+','5.000 $']];
+ return`<p class="lede">Die Finanzkraft (${cr}) legt fest, wie dein Investigator lebt. ${era()==='modern'?'Werte gelten für die Gegenwart in heutigen US-Dollar.':'Werte gelten für die 1920er Jahre in US-Dollar.'}</p>
+ <div class="money"><div class="fact counter" style="flex-direction:column;align-items:flex-start"><span>Lebensstandard</span><b>${f.lvl}</b></div>
+  <div class="fact counter" style="flex-direction:column;align-items:flex-start"><span>Bargeld</span><b>${f.cash}</b></div>
+  <div class="fact counter" style="flex-direction:column;align-items:flex-start"><span>Vermögen</span><b>${f.assets}</b></div>
+  <div class="fact counter" style="flex-direction:column;align-items:flex-start"><span>Ausgabenrahmen</span><b>${f.spend}</b></div></div>
+ <div class="tablewrap"><table><thead><tr><th>Finanzkraft</th><th>Stand</th><th>Bargeld</th><th>Vermögen</th><th>Ausgaben</th></tr></thead><tbody>${levels.map(l=>`<tr class="${l[1]===f.lvl?'hl':''}">${l.map((c,i)=>`<td${i!==1?' class="num"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+ <div class="block"><h3>Ausrüstung & Besitz</h3><label for="gear" class="note">Was trägt dein Investigator bei sich, was besitzt er? Waffen, Werkzeug, Bücher, Wohnung, Auto …</label>
+ <textarea id="gear" data-bind="gear" style="min-height:110px;margin-top:6px">${esc(C.gear)}</textarea>
+ <div class="row" style="margin-top:8px"><button class="btn ghost small" data-act="randGear">${DI} 4 Gegenstände würfeln</button><span class="note">Werden an die Liste angehängt.</span></div></div>
+ ${rule('Ausgabenrahmen',`<p>Der Ausgabenrahmen ist der Betrag, den dein Investigator täglich ausgeben kann, ohne genauer Buch zu führen. Das Vermögen umfasst Besitz wie Haus, Auto oder Wertpapiere.</p>`)}`}
+
+function sheetText(){const d=derived();const L=[];
+ L.push((C.info.name||'Unbenannter Investigator').toUpperCase());
+ L.push(`Epoche: ${ERA[era()]}`);
+ L.push(`Beruf: ${occName()||'–'} · Alter: ${C.age} · Geschlecht: ${C.info.gender||'–'}`);
+ L.push(`Wohnort: ${C.info.residence||'–'} · Geburtsort: ${C.info.birthplace||'–'}${C.info.player?' · Spieler/in: '+C.info.player:''}`);
+ L.push('','EIGENSCHAFTEN');L.push(ORDER.map(k=>{const v=final(k);return`${CH[k].a} ${v??'–'}${v!=null?` (${half(v)}/${fifth(v)})`:''}`}).join('  '));
+ L.push(`TP ${d.hp??'–'}  MP ${d.mp??'–'}  STA ${d.san??'–'}  Glück ${d.luck??'–'}  BW ${d.mov??'–'}  SB ${d.db??'–'}  Statur ${d.build??'–'}`);
+ L.push('','FERTIGKEITEN');instances().forEach(k=>{const v=skillVal(k);L.push(`${skillName(k).padEnd(34,'.')} ${String(v).padStart(2)} (${half(v)}/${fifth(v)})`)});
+ L.push('','HINTERGRUND');BACK.forEach(b=>{if(C.back[b.k])L.push(`${b.n}${C.keyConn===b.k?' [Schlüsselverbindung]':''}: ${C.back[b.k]}`)});
+ if(OCC[C.occ]){const f=finances(skillVal('finanzkraft'));L.push('','FINANZEN',`${f.lvl} · Bargeld ${f.cash} · Vermögen ${f.assets} · Ausgaben ${f.spend}`)}
+ if(C.gear)L.push('','AUSRÜSTUNG',C.gear);return L.join('\n')}
+
+function stepSheet(){const d=derived();const all=[];STEPS.forEach((s,i)=>{if(s.id==='sheet')return;stepIssues(i).forEach(t=>all.push([i,t]))});
+ const f=OCC[C.occ]?finances(skillVal('finanzkraft')):null;
+ const skills=instances().map(k=>{const v=skillVal(k),up=v>skillBase(k);return`<div class="sk${up?' up':''}"><span class="n">${esc(skillName(k))}</span><span class="v"><b>${v}</b> <small>${half(v)} · ${fifth(v)}</small></span></div>`}).join('');
+ return`${all.length?`<div class="block"><h3>Noch offen</h3><ul class="issues">${all.map(([i,t])=>`<li><span class="dot ${/zu viel|über 99|außerhalb|Doppelt|muss zwischen|nicht unter|nicht gesteigert/.test(t)?'warn':''}"></span><span>${esc(t)}</span><button class="linkbtn" data-act="go" data-i="${i}">Zu „${STEPS[i].t}“</button></li>`).join('')}</ul></div>`:`<div class="row"><p class="okline" style="font-size:15px;margin:0">Der Investigator ist vollständig und spielbereit.</p><button class="btn" data-act="mode" data-m="play">Mit diesem Investigator spielen →</button></div>`}
+ <div class="sheet block">
+  <div class="sheet-h"><div><div class="eyebrow">Investigator · ${ERA[era()]}</div><h3>${esc(C.info.name||'Unbenannter Investigator')}</h3></div>
+   <div class="kv" style="min-width:260px;flex:1;max-width:560px"><div><span>Beruf</span> ${esc(occName()||'–')}</div><div><span>Alter</span> ${esc(C.age)}</div><div><span>Geschlecht</span> ${esc(C.info.gender||'–')}</div><div><span>Wohnort</span> ${esc(C.info.residence||'–')}</div><div><span>Geburtsort</span> ${esc(C.info.birthplace||'–')}</div>${C.info.player?`<div><span>Spieler/in</span> ${esc(C.info.player)}</div>`:''}</div></div>
+  <div class="sec-h">Eigenschaften · normal · ½ · ⅕</div>
+  <div class="sgrid">${ORDER.map(k=>{const v=final(k);return`<div class="sbox"><span class="abbr">${CH[k].a}</span><b>${v??'–'}</b><small>${v!=null?half(v)+' · '+fifth(v):''}</small></div>`}).join('')}</div>
+  <div class="sec-h">Abgeleitete Werte</div>
+  <div class="sgrid">${[['TP','Treffer',d.hp],['MP','Magie',d.mp],['STA','Stabilität',d.san],['GL','Glück',d.luck],['BW','Bewegung',d.mov],['SB','Schaden',d.db],['ST','Statur',d.build]].map(([a,n,v])=>`<div class="sbox"><span class="abbr" style="font-size:18px">${a}</span><b>${v??'–'}</b><small>${n}</small></div>`).join('')}</div>
+  <div class="sec-h">Fertigkeiten · gesteigerte fett</div><div class="skillcols">${skills}</div>
+  <div class="sec-h">Hintergrund</div><div class="backlist">${BACK.filter(b=>C.back[b.k]).map(b=>`<div><span class="lbl">${b.n}${C.keyConn===b.k?' · Schlüssel':''}</span><p>${esc(C.back[b.k])}</p></div>`).join('')||'<p class="note">Noch kein Hintergrund eingetragen.</p>'}</div>
+  ${f?`<div class="sec-h">Finanzen</div><div class="kv"><div><span>Stand</span> ${f.lvl}</div><div><span>Bargeld</span> ${f.cash}</div><div><span>Vermögen</span> ${f.assets}</div><div><span>Ausgaben</span> ${f.spend}</div></div>`:''}
+  ${C.gear?`<div class="sec-h">Ausrüstung & Besitz</div><p style="white-space:pre-wrap;margin:0">${esc(C.gear)}</p>`:''}
+ </div>
+ <div class="block"><h3>Weitergeben & sichern</h3>
+  <div class="row"><button class="btn" data-act="copyText">Bogen als Text kopieren</button><button class="btn ghost" data-act="openTransfer">Sichern & Übertragen …</button><span class="note" id="copyMsg">${esc(ui.copied)}</span></div>
+  <p class="note" style="margin:6px 0 0">Der Text ist zum Lesen gedacht, etwa für die Spielleitung. Zum Übertragen auf ein anderes Gerät nutze „Sichern & Übertragen“.</p>
+  <textarea id="exportBox" class="exportbox" readonly style="margin-top:10px" aria-label="Bogen als Text">${esc(sheetText())}</textarea></div>`}
+
+/* ===================== Live-Aktualisierung ===================== */
+function liveVal(key){
+ if(key==='occ-rem')return occTotal()-occSpent();
+ if(key==='pers-rem')return persTotal()-persSpent();
+ if(key==='pb-rem')return POINTBUY-ORDER.reduce((s,k)=>s+(+C.base[k]||0),0);
+ if(key==='ded-rem')return band(C.age).ded-dedSum();
+ const i=key.indexOf(':'),p=key.slice(0,i),r=key.slice(i+1);
+ if(p==='v')return skillVal(r);if(p==='vh')return half(skillVal(r));if(p==='vf')return fifth(skillVal(r));
+ if(p==='c')return final(r)??'–';
+ const b=C.base[r];if(p==='bh')return b==null?'–':half(+b);if(p==='bf')return b==null?'–':fifth(+b);
+ return''}
+function refreshLive(){document.querySelectorAll('[data-live]').forEach(el=>{const v=liveVal(el.dataset.live);el.textContent=v;if(el.hasAttribute('data-sign'))el.classList.toggle('neg',typeof v==='number'&&v<0)});
+ document.querySelectorAll('[data-row]').forEach(r=>r.classList.toggle('over',skillVal(r.dataset.row)>99));
+ const fi=document.getElementById('footissue');if(fi){const is=stepIssues(C.step);fi.textContent=is[0]||''}
+ renderNav();centerStep();renderSide();renderMbar();renderHeaderName()}
+function renderHeaderName(){const sel=document.getElementById('charSel');if(!sel)return;const o=sel.querySelector(`option[value="${CSS.escape(C.id)}"]`);if(o)o.textContent=(C.info.name||'Unbenannter Investigator')+(occName()?' · '+occName():'')}
+function renderAll(){renderHeader();renderTransfer();const play=C.mode==='play';document.getElementById('build').hidden=play;document.getElementById('play').hidden=!play;
+ if(play){ui.sheet=false;renderPlay();return}renderNav();renderMain();renderSide();refreshLive();applySearch()}
+function applySearch(){const q=ui.search.trim().toLowerCase();document.querySelectorAll('tr[data-name]').forEach(r=>r.hidden=!!q&&!r.dataset.name.includes(q))}
+
+/* ===================== Zufall ===================== */
+const pick=a=>a[rnd(a.length)-1];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1)-1;[a[i],a[j]]=[a[j],a[i]]}return a}
+function randomPerson(){const w=rnd(2)===1;C.info.gender=w?'weiblich':'männlich';
+ const N=era()==='modern'?NAMES_M:NAMES;C.info.name=(rnd(100)<=15?'Dr. ':'')+pick(w?N.w:N.m)+' '+pick(NAMES.s);
+ C.info.residence=pick(HOMES);C.info.birthplace=pick(BIRTH)}
+function rollLuck(i){const r=[rnd(6),rnd(6),rnd(6)];C.luckDice[i]=r;C.luck[i]=r.reduce((x,y)=>x+y)*5}
+function randomDed(){const B=band(C.age);B.keys.forEach(k=>C.ageDed[k]=0);if(!B.ded)return;const step=B.ded>=20?5:1;let rem=B.ded,guard=0;
+ while(rem>0&&guard++<500){const k=pick(B.keys);const room=(+C.base[k]||0)-1-(+C.ageDed[k]||0);const add=Math.min(step,rem,room);if(add<=0)continue;C.ageDed[k]+=add;rem-=add}}
+function randomAge(){const d=[rnd(20),rnd(20)];C.ageDice=d;C.age=15+d[0]+d[1];C.ageDed={STR:0,CON:0,DEX:0,SIZ:0};C.eduChecks=[];
+ if(C.base.STR!=null)randomDed();if(band(C.age).youth&&C.luck[0]!=null&&C.luck[1]==null)rollLuck(1)}
+function doEduCheck(){const B=band(C.age);const i=C.eduChecks.length;if(i>=B.checks||C.base.EDU==null)return;const cur=eduBefore(i);const r=rnd(100);C.eduChecks.push({roll:r,gain:r>cur?Math.min(rnd(10),99-cur):0})}
+function randomOcc(){const ids=occIds().filter(id=>!OCC[id].custom);const n=rnd(ids.length);C.occ=ids[n-1];C.occRoll=n;C.occPick={};C.occPts={};C.occAlt=''}
+function randomPicks(onlyEmpty){slots().forEach((s,i)=>{if(s.fixed)return;C.occPick[i]=C.occPick[i]||[];
+ for(let j=0;j<s.n;j++){if(onlyEmpty&&validPick(C.occPick[i][j]))continue;C.occPick[i][j]='';const used=new Set(occKeyList());
+  for(const o of shuffle(s.opts)){if(o.endsWith(':*')){const f=o.slice(0,-2);const sug=shuffle(SKM[f].sugg||[]).find(x=>!used.has(f+':'+x));if(sug){C.occPick[i][j]=f+':'+sug;break}}
+   else if(!used.has(o)){C.occPick[i][j]=o;break}}}});pruneOcc()}
+function spread(pool,keys,total){let rem=total;const P=C[pool+'Pts'];
+ for(const cap of[75,99]){let guard=0;while(rem>0&&guard++<5000){const el=keys.filter(k=>skillVal(k)<cap);if(!el.length)break;const k=pick(el);const add=Math.min(rem,pick([5,5,10,10,15]),cap-skillVal(k));if(add<=0)continue;P[k]=(+P[k]||0)+add;rem-=add}if(rem<=0)break}
+ return rem}
+function rollCR(){const[a,b]=crRange();C.occPts.finanzkraft=a+rnd(b-a+1)-1;if(!C.occPts.finanzkraft)delete C.occPts.finanzkraft}
+function randomOccPts(){if(occIssues().length)randomPicks(true);C.occPts={};const tot=occTotal();rollCR();
+ if((C.occPts.finanzkraft||0)>tot)C.occPts.finanzkraft=tot;
+ const keys=[...new Set(occKeyList())].filter(k=>k!=='finanzkraft'&&k!=='mythos');spread('occ',keys,tot-(C.occPts.finanzkraft||0))}
+function randomPersPts(){C.persPts={};
+ if(rnd(10)<=4){const f=SKM.fremdsprache;const s=shuffle(f.sugg).find(x=>!instances().includes('fremdsprache:'+x));if(s)C.extraSpecs.push('fremdsprache:'+s)}
+ const all=instances().filter(k=>k!=='mythos'&&k!=='finanzkraft');const focus=shuffle(all).slice(0,5+rnd(4));
+ const rem=spread('pers',focus,persTotal());if(rem>0)spread('pers',all,rem)}
+function randomBack(onlyEmpty){BACK.forEach(b=>{const l=backSugg(b);if(!l.length)return;if(onlyEmpty&&C.back[b.k].trim())return;C.back[b.k]=pick(l)});
+ if(!C.keyConn)C.keyConn=pick(['people','places','items','ideo'])}
+function randomGear(){const items=shuffle(era()==='modern'?GEAR_M:GEAR).slice(0,4).join(', ');C.gear=C.gear.trim()?C.gear.trim()+'\n'+items:items}
+function randomAll(){const id=C.id;Object.assign(C,newChar(),{id,method:'roll',era:C.era});randomPerson();ORDER.forEach(rollChar);rollLuck(0);
+ randomAge();for(let i=0;i<4;i++)doEduCheck();randomOcc();randomPicks(false);randomOccPts();randomPersPts();randomBack(false);randomGear();C.step=STEPS.length-1}
+function hasData(){return ORDER.some(k=>C.base[k]!=null)||!!C.info.name.trim()||!!C.occ}
+
+/* ===================== Epoche ===================== */
+function notInEra(k,target){const d=SKM[splitKey(k)[0]];return!!(d&&d.era&&d.era!==target)}
+function eraConflicts(target){const out=[];const o=OCC[C.occ];if(o&&o.era&&o.era!==target)out.push(`Beruf „${o.n}“`);
+ const keys=new Set([...Object.keys(C.occPts),...Object.keys(C.persPts),...C.extraSpecs,...Object.keys(C.play&&C.play.gain||{}),...Object.values(C.occPick).flat().filter(Boolean)]);
+ keys.forEach(k=>{if(notInEra(k,target))out.push(skillName(k))});return[...new Set(out)]}
+function applyEra(target){const o=OCC[C.occ];if(o&&o.era&&o.era!==target){C.occ='';C.occPick={};C.occPts={};C.occAlt='';C.occRoll=null}
+ for(const pool of[C.occPts,C.persPts,C.play&&C.play.gain,C.play&&C.play.ticks])if(pool)for(const k of Object.keys(pool))if(notInEra(k,target))delete pool[k];
+ C.extraSpecs=C.extraSpecs.filter(k=>!notInEra(k,target));
+ for(const i of Object.keys(C.occPick))C.occPick[i]=(C.occPick[i]||[]).map(p=>p&&notInEra(p,target)?'':p);
+ C.era=target;pruneOcc()}
+
+/* ===================== Aktionen ===================== */
+function rollChar(k){const r=TWO.includes(k)?[rnd(6),rnd(6)]:[rnd(6),rnd(6),rnd(6)];C.rolls[k]=r;const s=r.reduce((a,b)=>a+b,0);C.base[k]=(TWO.includes(k)?s+6:s)*5;if(k==='EDU')C.eduChecks=[]}
+function setPath(obj,path,val){const ks=path.split('.');let o=obj;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
+function go(i){ui.sheet=false;ui.eraConfirm=null;if(STEPS[C.step].id==='occ')pruneOcc();C.step=Math.max(0,Math.min(STEPS.length-1,i));ui.confirmDel=false;ui.pendingMethod=null;ui.confirmAll=false;touch();renderAll();
+ document.getElementById('main').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+function setPts(pool,k,v){v=Math.max(0,Math.round(+v||0));if(v)C[pool+'Pts'][k]=v;else delete C[pool+'Pts'][k]}
+/* ===================== Spielansicht: Regeln ===================== */
+const COMBAT=['nahkampf','fernkampf','ausweichen'];
+const NOTICK=['mythos','finanzkraft'];
+const LV=['Patzer','Misserfolg','Erfolg','Schwieriger Erfolg','Extremer Erfolg','Kritischer Erfolg'];
+const DIFF={2:'Regulär',3:'Schwierig',4:'Extrem'};
+const COND=[['major','Schwere Wunde'],['uncon','Bewusstlos'],['dying','Sterbend'],['tempIns','Vorübergehender Wahnsinn'],['indefIns','Unbestimmter Wahnsinn'],['permIns','Dauerhaft wahnsinnig'],['dead','Tot']];
+const PRESETS=[
+ {name:'Unbewaffnet',skill:'nahkampf:Handgemenge',dmg:'1W3+SB',imp:false,range:'Berührung',rate:'1',ammoMax:0,malf:0},
+ {name:'Messer (groß)',skill:'nahkampf:Handgemenge',dmg:'1W8+SB',imp:true,range:'Berührung',rate:'1',ammoMax:0,malf:0},
+ {name:'Knüppel',skill:'nahkampf:Handgemenge',dmg:'1W6+SB',imp:false,range:'Berührung',rate:'1',ammoMax:0,malf:0},
+ {name:'Revolver .38',skill:'fernkampf:Faustfeuerwaffe',dmg:'1W10',imp:true,range:'15 m',rate:'1 (3)',ammoMax:6,malf:100},
+ {name:'Pistole .45',skill:'fernkampf:Faustfeuerwaffe',dmg:'1W10+2',imp:true,range:'15 m',rate:'1 (3)',ammoMax:7,malf:100},
+ {name:'Schrotflinte Kal. 12',skill:'fernkampf:Gewehr/Schrotflinte',dmg:'4W6/2W6/1W6',imp:false,range:'10/20/50 m',rate:'1 oder 2',ammoMax:2,malf:100},
+ {name:'Pistole 9 mm',skill:'fernkampf:Faustfeuerwaffe',dmg:'1W10',imp:true,range:'15 m',rate:'1 (3)',ammoMax:15,malf:100,era:'modern'},
+ {name:'Gewehr .30-06',skill:'fernkampf:Gewehr/Schrotflinte',dmg:'2W6+4',imp:true,range:'110 m',rate:'1',ammoMax:5,malf:100}];
+function hpMax(){return derived().hp??0}
+function mpMax(){return derived().mp??0}
+function sanMax(){return 99-skillVal('mythos')}
+function newWeapon(pr){return{...pr,id:'w'+Date.now().toString(36)+rnd(9999),ammo:pr.ammoMax||0}}
+function playReady(){return allFinal()&&luck()!=null}
+/* Die Leisten merken sich, von welchen Startwerten sie ausgehen (p.base). Ändert sich der Bogen,
+   werden die aktuellen Werte um genau diese Differenz verschoben – erlittener Schaden bleibt erhalten. */
+function ensurePlay(){if(!C.play||typeof C.play!=='object')C.play={};const p=C.play,d=derived();
+ const start={hp:d.hp??0,mp:d.mp??0,san:d.san??0,luck:d.luck??0};
+ if(!p.base||typeof p.base!=='object'){
+  const bogus=['hp','mp','san','luck'].every(k=>!(+p[k]));          // alte Fassung: mit Nullen gespeichert
+  p.base=bogus||p.hp==null?{hp:0,mp:0,san:0,luck:0}:{...start};
+  for(const k of['hp','mp','san','luck'])if(p[k]==null||bogus)p[k]=0}
+ if(p.sanDayStart!=null&&!(+p.base.san)&&start.san)p.sanDayStart=null;
+ for(const k of['hp','mp','san','luck']){const diff=start[k]-(+p.base[k]||0);if(diff)p[k]=(+p[k]||0)+diff;p.base[k]=start[k]}
+ p.hp=Math.max(0,Math.min(p.hp,start.hp));p.mp=Math.max(0,Math.min(p.mp,start.mp));p.san=Math.max(0,Math.min(p.san,99-skillVal('mythos')));p.luck=Math.max(0,Math.min(p.luck,99));
+ if(p.sanDayStart==null)p.sanDayStart=p.san;if(p.sanToday==null)p.sanToday=0;
+ for(const k of['ticks','cond','gain'])if(!p[k]||typeof p[k]!=='object')p[k]={};
+ if(!Array.isArray(p.weapons))p.weapons=[newWeapon(PRESETS[0])];if(!Array.isArray(p.log))p.log=[];if(p.notes==null)p.notes='';
+ return p}
+function plog(text){const p=C.play;p.log.unshift({t:Date.now(),text});if(p.log.length>60)p.log.length=60}
+function dbStr(){const x=dbBuild();return x?x.db:'0'}
+function rollExpr(expr,opt={}){let s=String(expr||'').replace(/[−–]/g,'-').replace(/\s+/g,'').replace(/([+-]?)SB/gi,(m,sg)=>{let v=dbStr().replace(/[−–]/g,'-');if(v==='0')return'+0';if(!/^[+-]/.test(v))v='+'+v;if(sg==='-')v=(v[0]==='+'?'-':'+')+v.slice(1);return v});
+ if(!s)throw new Error('Gib einen Würfelausdruck ein, z. B. 1W6+2.');if(!/^[+-]/.test(s))s='+'+s;
+ const re=/([+-])(\d*)[wd](\d+)|([+-])(\d+)/gi;let m,total=0,pos=0;const parts=[];
+ while((m=re.exec(s))){if(m.index!==pos)break;pos=re.lastIndex;
+  if(m[3]){const sg=m[1]==='-'?-1:1,n=+(m[2]||1),f=+m[3];if(n<1||n>50||f<2||f>1000)throw new Error('Zu viele oder ungültige Würfel.');
+   const r=[];for(let i=0;i<n;i++)r.push(opt.max?f:rnd(f));total+=sg*r.reduce((a,b)=>a+b,0);parts.push(`${sg<0?'−':parts.length?'+':''}${n}W${f} [${r.join(', ')}]`)}
+  else{const v=+m[5]*(m[4]==='-'?-1:1);total+=v;if(v)parts.push(`${v<0?'−':parts.length?'+':''}${Math.abs(v)}`)}}
+ if(pos!==s.length)throw new Error('Diesen Ausdruck verstehe ich nicht. Beispiele: 1W6, 2W6+4, 1W3+SB.');
+ return{total,text:parts.join(' ')||'0'}}
+function d100(bp){const u=rnd(10)-1,n=1+Math.abs(bp),tens=[];for(let i=0;i<n;i++)tens.push((rnd(10)-1)*10);
+ const vals=tens.map(t=>t+u===0?100:t+u);const roll=bp>0?Math.min(...vals):bp<0?Math.max(...vals):vals[0];
+ return{roll,tens,u,usedTen:tens[vals.indexOf(roll)]}}
+function levelOf(roll,t){if(roll===1)return 5;if(roll===100||(t<50&&roll>=96))return 0;if(roll<=fifth(t))return 4;if(roll<=half(t))return 3;if(roll<=t)return 2;return 1}
+function thr(t,diff){return diff===2?t:diff===3?half(t):fifth(t)}
+
+function makeRoll(spec,pushed){const p=C.play;const diff=spec.diff,bp=spec.bp;const d=d100(bp);const lv=levelOf(d.roll,spec.target);
+ const r={spec,weapon:spec.weapon,label:spec.label,target:spec.target,diff,bp,...d,level:lv,success:lv===5||(lv>=diff&&lv!==0),pushed:!!pushed,notes:[]};
+ const fam=spec.key?splitKey(spec.key)[0]:'';
+ if(spec.malf&&d.roll>=spec.malf){r.success=false;r.notes.push('Fehlfunktion! Die Waffe hat Ladehemmung oder versagt.')}
+ const usesLuck=['skill','char','attack'].includes(spec.kind);
+ r.luckCost=d.roll-thr(spec.target,diff);
+ r.canLuck=!r.success&&lv!==0&&!pushed&&usesLuck&&r.luckCost>0&&r.luckCost<=p.luck&&!r.notes.length;
+ r.canPush=!r.success&&lv!==0&&!pushed&&(spec.kind==='char'||(spec.kind==='skill'&&!COMBAT.includes(fam)));
+ if(r.success&&(spec.kind==='skill'||spec.kind==='attack')&&spec.key&&!NOTICK.includes(fam)){if(!p.ticks[spec.key])r.notes.push('Steigerungshäkchen gesetzt.');p.ticks[spec.key]=true}
+ if(pushed&&!r.success)r.notes.push('Forcierte Probe gescheitert: Die Spielleitung bestimmt eine ernste Folge.');
+ if(lv===0&&!pushed)r.notes.push('Patzer: Etwas geht richtig schief.');
+ if(spec.kind==='san')sanAfterRoll(r);
+ plog(`${r.label} (${spec.target}${diff>2?', '+DIFF[diff]:''}${bp?', '+(bp>0?'+':'')+bp+' '+(bp>0?'Bonus':'Malus'):''}${pushed?', forciert':''}) → ${d.roll}: ${LV[lv]}${r.success?'':' – nicht bestanden'}${r.sanText?' · '+r.sanText:''}`);
+ ui.result=r;return r}
+function startRoll(spec){spec.diff=spec.diff??ui.diff;spec.bp=spec.bp??ui.bp;ui.diff=2;ui.bp=0;makeRoll(spec,false);touch();renderPlay()}
+function spendLuck(){const r=ui.result,p=C.play;if(!r||!r.canLuck)return;p.luck-=r.luckCost;r.success=true;r.level=r.diff;r.luckSpent=r.luckCost;r.canLuck=false;r.canPush=false;
+ r.notes.push(`${r.luckCost} Glück eingesetzt – bestanden. Dafür gibt es kein Steigerungshäkchen.`);plog(`${r.label}: ${r.luckCost} Glück eingesetzt, jetzt bestanden`);touch();renderPlay()}
+
+function applyDamage(n,src){const p=C.play,max=hpMax(),out=[];n=Math.max(0,Math.round(n));if(!n)return out;
+ if(n>=max&&max>0){p.cond.dead=true;out.push(`Ein einzelner Treffer von ${n} Schaden erreicht die maximalen TP (${max}): Der Investigator ist tot.`)}
+ else if(n>=Math.ceil(max/2)){p.cond.major=true;out.push(`Schwere Wunde (mindestens die Hälfte der max. TP). Würfle auf KO, sonst wird der Investigator bewusstlos.`)}
+ p.hp=Math.max(0,p.hp-n);
+ if(p.hp===0&&!p.cond.dead){if(p.cond.major){p.cond.dying=true;out.push('0 TP mit schwerer Wunde: Sterbend. Jede Runde eine KO-Probe; Erste Hilfe stabilisiert vorübergehend.')}else{p.cond.uncon=true;out.push('0 TP ohne schwere Wunde: Der Investigator ist bewusstlos.')}}
+ plog(`${src||'Schaden'}: −${n} TP (jetzt ${p.hp}/${max})`);return out}
+function heal(n,src){const p=C.play;n=Math.max(0,Math.round(n));p.hp=Math.min(hpMax(),p.hp+n);if(p.hp>0){p.cond.uncon=false}plog(`${src||'Heilung'}: +${n} TP (jetzt ${p.hp}/${hpMax()})`)}
+function applySanLoss(n,src){const p=C.play,out=[];n=Math.max(0,Math.round(n));if(!n)return out;
+ p.san=Math.max(0,p.san-n);p.sanToday+=n;
+ if(n>=5)out.push(`${n} Stabilität auf einmal verloren: Würfle auf IN. Bei Erfolg begreift der Investigator das Grauen und wird vorübergehend wahnsinnig (1W10 Stunden).`);
+ const lim=Math.max(1,fifth(p.sanDayStart));
+ if(p.sanToday>=lim&&!p.cond.indefIns){p.cond.indefIns=true;out.push(`Heute insgesamt ${p.sanToday} Stabilität verloren (Grenze ${lim} = ⅕ des Tagesbeginns): unbestimmter Wahnsinn.`)}
+ if(p.san===0){p.cond.permIns=true;out.push('Stabilität 0: Der Investigator ist dauerhaft wahnsinnig.')}
+ plog(`${src||'Stabilitätsverlust'}: −${n} STA (jetzt ${p.san})`);return out}
+function sanAfterRoll(r){const loss=(ui.sanLoss||'').trim();if(!loss)return;const[a,b]=loss.split('/');
+ try{let n,t;if(r.level===0&&b!=null){n=rollExpr(b,{max:true}).total;t=`Patzer: maximaler Verlust ${n}`}
+  else{const ex=r.success?(a||'0'):(b??a);const x=rollExpr(ex);n=x.total;t=/[wd]/i.test(ex)?`${r.success?'Bestanden':'Nicht bestanden'} – Verlust ${ex}: ${x.text} = ${n}`:`${r.success?'Bestanden':'Nicht bestanden'} – Verlust ${n}`}
+  r.sanText=t;r.notes.push(t);const hs=applySanLoss(n,'Stabilitätsprobe');hs.forEach(h=>r.notes.push(h));if(hs.length)ui.hints=hs}catch(e){r.notes.push('Verlust nicht verstanden – bitte im Format 1/1W6 angeben.')}}
+function devPhase(withLuck){const p=C.play,out=[];
+ for(const k of Object.keys(p.ticks).filter(k=>p.ticks[k]).sort((a,b)=>skillName(a).localeCompare(skillName(b),'de'))){const v=skillVal(k),r=rnd(100);
+  if(r>v||r>=96){const g=Math.min(rnd(10),99-v);if(g>0){p.gain[k]=(+p.gain[k]||0)+g;let line=`${skillName(k)}: W100 ${r} → +${g} (jetzt ${v+g})`;
+    if(v<90&&v+g>=90){const s=rnd(6)+rnd(6);p.san=Math.min(sanMax(),p.san+s);line+=`. Meisterschaft: +${s} Stabilität`}out.push(line)}else out.push(`${skillName(k)}: schon bei 99`)}
+  else out.push(`${skillName(k)}: W100 ${r} → keine Steigerung`)}
+ if(!out.length)out.push('Keine Fertigkeit hatte ein Häkchen.');
+ p.ticks={};
+ if(withLuck){const r=rnd(100);if(r>p.luck){const g=Math.min(rnd(10),99-p.luck);p.luck+=g;out.push(`Glück: W100 ${r} → +${g} (jetzt ${p.luck})`)}else out.push(`Glück: W100 ${r} → keine Erholung`)}
+ p.dev={at:Date.now(),lines:out};plog('Steigerungsphase durchgeführt');}
+
+/* ===================== Spielansicht: Darstellung ===================== */
+function bar(v,max){const pct=max>0?Math.max(0,Math.min(100,v/max*100)):0;return`<div class="bar${pct<=25?' low':''}"><i style="width:${pct}%"></i></div>`}
+function attackSkills(){return instances().filter(k=>['nahkampf','fernkampf'].includes(splitKey(k)[0]))}
+function renderResult(){const r=ui.result;if(!r)return'';
+ if(r.simple)return`<div class="result" role="status" aria-live="polite"><div class="result-in"><div class="rnum">${r.total}</div>
+  <div class="rmeta"><span class="rt">${esc(r.label)}</span><span class="rd">${esc(r.text)}</span>${r.notes.map(n=>`<span class="note">${esc(n)}</span>`).join('')}</div>
+  <div class="ract">${r.dmgApply?`<button class="btn small ghost" data-act="dmgSelf" data-n="${r.total}" title="Falls dein Investigator selbst getroffen wurde">Mir abziehen</button>`:''}<button class="btn small ghost" data-act="closeResult">Schließen</button></div></div></div>`;
+ const tens=r.tens.map(t=>`<span class="die d100${t===r.usedTen?'':' used'}">${String(t).padStart(2,'0')}</span>`).join('');
+ return`<div class="result" role="status" aria-live="polite"><div class="result-in">
+  <div class="rnum">${r.roll}</div>
+  <div class="rmeta"><span class="rt">${esc(r.label)}</span>
+   <span class="rd">Ziel ${r.target}${r.diff>2?` · ${DIFF[r.diff]} (≤ ${thr(r.target,r.diff)})`:''}${r.bp?` · ${Math.abs(r.bp)} ${r.bp>0?'Bonus':'Malus'}würfel`:''}${r.pushed?' · forciert':''} · ${tens}<span class="die d10">${r.u}</span></span>
+   <span class="lvl s${r.luckSpent?r.diff:r.level}">${r.luckSpent?'Bestanden mit Glück':LV[r.level]}${!r.luckSpent&&r.level>0&&r.level<5&&!r.success?' – nicht genug':''}</span>
+   ${r.notes.map(n=>`<span class="note">${esc(n)}</span>`).join('')}</div>
+  <div class="ract">${r.canLuck?`<button class="btn small" data-act="spendLuck">${r.luckCost} Glück einsetzen</button>`:''}${r.canPush?`<button class="btn small ghost" data-act="pushRoll">Probe forcieren</button>`:''}${r.weapon&&r.success?`<button class="btn small" data-act="wDmg" data-id="${esc(r.weapon)}"${r.level>=4?' data-ext="1"':''}>${r.level>=4?'Extremschaden würfeln':'Schaden würfeln'}</button>`:''}<button class="btn small ghost" data-act="closeResult">Schließen</button></div>
+ </div></div>`}
+
+const PTABS=[['status','Status','<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'],
+ ['proben','Proben','<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/>'],
+ ['kampf','Kampf','<path d="M5 19 19 5M15 5h4v4M5 5l5 5M14 14l5 5M17 19h2v-2"/>'],
+ ['wuerfel','Würfel','<path d="M12 3 20 7.5v9L12 21l-8-4.5v-9z"/><path d="M12 12 20 7.5M12 12v9M12 12 4 7.5"/>'],
+ ['notizen','Notizen','<path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/>']];
+function T(...tabs){return tabs.includes(ui.ptab||'status')?'':' data-off'}
+function renderPlay(){const el=document.getElementById('play');
+ if(!playReady()){const miss=ORDER.filter(k=>final(k)==null).map(k=>CH[k].n);
+  el.innerHTML=`<div class="ptop"><div><div class="eyebrow">Spielansicht</div><h2>${esc(C.info.name||'Unbenannter Investigator')}</h2></div></div>
+  <div class="occdetail" style="max-width:640px"><h3 style="font-family:var(--head);font-size:24px;margin:0 0 6px">Noch nicht spielbereit</h3>
+  <p style="margin:0 0 12px">Trefferpunkte, Stabilität, Magiepunkte und Glück ergeben sich aus den Eigenschaften. ${miss.length?`Es fehlen noch: ${esc(miss.join(', '))}.`:'Es fehlt noch der Glückswurf.'}</p>
+  <div class="row"><button class="btn" data-act="toChars">Zu den Eigenschaften</button><button class="btn ghost" data-act="mode" data-m="build">Zurück zum Erstellen</button></div></div>`;return}
+ const p=ensurePlay();const d=derived();
+ const done=stepState(STEPS.length-1)==='done';const hm=hpMax(),mm=mpMax(),sm=sanMax(),lim=Math.max(1,fifth(p.sanDayStart));
+ const hints=(ui.hints||[]).map(h=>`<p class="hint">${esc(h)}</p>`).join('');
+ const filt=ui.pfilter||'used',q=(ui.psearch||'').trim().toLowerCase();
+ const skills=instances().filter(k=>(filt==='all'||skillVal(k)>skillBase(k)||p.ticks[k]||COMBAT.includes(splitKey(k)[0]))&&(!q||skillName(k).toLowerCase().includes(q)));
+ const ticks=Object.keys(p.ticks).filter(k=>p.ticks[k]);
+ const weapons=p.weapons.map(w=>{const ed=ui.wedit===w.id;const v=skillVal(w.skill);const isFire=w.ammoMax>0;
+  return`<div class="wcard"><div class="wtop"><strong>${esc(w.name||'Waffe')}</strong><span class="row" style="gap:10px"><button class="linkbtn" data-act="wEdit" data-id="${w.id}">${ed?'Fertig':'Bearbeiten'}</button>${ed?`<button class="linkbtn" data-act="wDel" data-id="${w.id}" style="color:var(--blood)">Entfernen</button>`:''}</span></div>
+  <div class="wsum">${esc(skillName(w.skill))} ${v} · Schaden ${esc(w.dmg)}${w.imp?' · durchdringend':''} · ${esc(w.range)} · ${esc(w.rate)}/Runde${w.malf?' · Fehlfkt. '+w.malf:''}</div>
+  ${ed?`<div class="wfields">
+   <label><span class="lbl">Name</span><input data-w="${w.id}|name" value="${esc(w.name)}"></label>
+   <label><span class="lbl">Fertigkeit</span><select data-w="${w.id}|skill">${attackSkills().map(k=>`<option value="${esc(k)}"${k===w.skill?' selected':''}>${esc(skillName(k))}</option>`).join('')}</select></label>
+   <label><span class="lbl">Schaden</span><input data-w="${w.id}|dmg" value="${esc(w.dmg)}" placeholder="1W6+SB"></label>
+   <label><span class="lbl">Reichweite</span><input data-w="${w.id}|range" value="${esc(w.range)}"></label>
+   <label><span class="lbl">Angriffe/Runde</span><input data-w="${w.id}|rate" value="${esc(w.rate)}"></label>
+   <label><span class="lbl">Magazin</span><input type="number" min="0" data-w="${w.id}|ammoMax" value="${w.ammoMax||0}"></label>
+   <label><span class="lbl">Fehlfunktion ab</span><input type="number" min="0" max="100" data-w="${w.id}|malf" value="${w.malf||0}"></label>
+   <label class="keyc" style="align-self:end;padding-bottom:6px"><input type="checkbox" data-w="${w.id}|imp"${w.imp?' checked':''}> durchdringend</label></div>`:''}
+  <div class="row"><button class="btn small" data-act="wAtk" data-id="${w.id}">Angriff (${v})</button><button class="btn small ghost" data-act="wDmg" data-id="${w.id}">Schaden</button>
+   ${isFire?`<span class="ammo">Munition ${w.ammo}/${w.ammoMax}</span><button class="linkbtn" data-act="wReload" data-id="${w.id}">Nachladen</button>`:''}</div></div>`}).join('');
+ const dev=ui.devConfirm?`<div class="confirm" style="margin-top:8px"><span>Für ${ticks.length} Fertigkeit${ticks.length===1?'':'en'} mit Häkchen wird jetzt gewürfelt. Danach sind alle Häkchen entfernt.</span>
+   <label class="keyc"><input type="checkbox" id="devLuck"${ui.devLuck!==false?' checked':''}> Glück erholen</label><button class="btn small" data-act="devRun">Jetzt würfeln</button><button class="btn small ghost" data-act="devCancel">Abbrechen</button></div>`:'';
+ el.innerHTML=`<div class="ptop"><div><div class="eyebrow">${esc([occName(),C.age?C.age+' Jahre':'',C.info.residence].filter(Boolean).join(' · ')||'Investigator')}</div><h2>${esc(C.info.name||'Unbenannter Investigator')}</h2></div>
+  <div class="row">${done?'':`<span class="warnline">Der Investigator ist noch nicht fertig erstellt.</span>`}<button class="btn small ghost" data-act="mode" data-m="build">Bogen bearbeiten</button><button class="btn small ghost" data-act="resetPlay">Spielwerte zurücksetzen …</button></div></div>
+ ${ui.confirmReset?`<div class="confirm"><span>Alle Spielwerte auf den Start zurücksetzen? TP, MP, Stabilität, Glück, Zustände, Häkchen, Steigerungen und Protokoll beginnen neu. Waffen und Notizen bleiben.</span><button class="btn small danger" data-act="resetYes">Zurücksetzen</button><button class="btn small ghost" data-act="resetNo">Abbrechen</button></div>`:''}
+ <div class="trackers"${T('status')}>
+  <div class="trk"><div class="trk-h"><span class="lbl">Trefferpunkte</span><span class="note">SB ${esc(d.db??'–')} · Statur ${d.build??'–'}</span></div>
+   <div class="trk-v">${p.hp}<small> / ${hm}</small></div>${bar(p.hp,hm)}
+   <div class="trk-ctl"><input type="number" id="pHp" min="0" placeholder="Wert" inputmode="numeric" aria-label="Trefferpunkte ändern"><button class="btn small" data-act="pDmg">Schaden</button><button class="btn small ghost" data-act="pHeal">Heilen</button></div>
+   <div class="trk-ctl"><button class="linkbtn" data-act="pFirstAid">Erste Hilfe +1</button><button class="linkbtn" data-act="pMedicine">Medizin +1W3</button></div></div>
+  <div class="trk"><div class="trk-h"><span class="lbl">Stabilität</span><span class="note">Max. ${sm}</span></div>
+   <div class="trk-v">${p.san}<small> / ${sm}</small></div>${bar(p.san,sm)}
+   <div class="trk-ctl"><input type="text" id="sanLoss" value="${esc(ui.sanLoss||'')}" placeholder="0/1W6" style="width:90px" aria-label="Verlust bei Erfolg/Misserfolg"><button class="btn small" data-act="sanRoll">Stabilitätsprobe</button></div>
+   <div class="trk-ctl"><input type="number" id="pSan" min="0" placeholder="Wert" inputmode="numeric" aria-label="Stabilität ändern"><button class="btn small ghost" data-act="pSanLoss">Verlust</button><button class="btn small ghost" data-act="pSanGain">Gewinn</button></div>
+   <p class="note">Heute verloren: ${p.sanToday} von ${lim} <button class="linkbtn" data-act="newDay">Neuer Tag</button></p></div>
+  <div class="trk"><div class="trk-h"><span class="lbl">Magiepunkte</span><span class="note">+1 pro Stunde</span></div>
+   <div class="trk-v">${p.mp}<small> / ${mm}</small></div>${bar(p.mp,mm)}
+   <div class="trk-ctl"><input type="number" id="pMp" min="0" placeholder="Wert" inputmode="numeric" aria-label="Magiepunkte ändern"><button class="btn small" data-act="pMpSpend">Ausgeben</button><button class="btn small ghost" data-act="pMpGain">Zurück</button></div></div>
+  <div class="trk"><div class="trk-h"><span class="lbl">Glück</span><span class="note">Start ${d.luck??'–'}</span></div>
+   <div class="trk-v">${p.luck}<small> / 99</small></div>${bar(p.luck,99)}
+   <div class="trk-ctl"><button class="btn small" data-act="luckRoll">Glücksprobe</button><input type="number" id="pLuck" min="0" placeholder="Wert" inputmode="numeric" aria-label="Glück ändern"><button class="btn small ghost" data-act="pLuckSpend">Ausgeben</button></div></div>
+ </div>
+ ${hints?`<div style="display:flex;flex-direction:column;gap:6px">${hints}<button class="linkbtn" data-act="clearHints" style="align-self:flex-start">Hinweise ausblenden</button></div>`:''}
+ <div${T('status')}><span class="lbl">Zustände</span><div class="chips">${COND.map(([k,n])=>`<button class="chip" data-act="cond" data-k="${k}" aria-pressed="${!!p.cond[k]}">${n}</button>`).join('')}</div></div>
+ <div class="rollbar"${T('proben','kampf','wuerfel','notizen')}>
+  <button class="ministrip" data-act="ptab" data-v="status" aria-label="Zum Status">TP <b>${p.hp}</b>/${hm} <span>STA <b>${p.san}</b></span><span>MP <b>${p.mp}</b></span><span>Glück <b>${p.luck}</b></span>${COND.filter(([k])=>p.cond[k]).map(([,n])=>`<span class="cnd">${n}</span>`).join('')}</button>
+  <span class="lbl" style="margin:0"${T('proben','kampf')}>Nächste Probe</span>
+  <div class="seg" role="group" aria-label="Schwierigkeit"${T('proben','kampf')}>${[2,3,4].map(v=>`<button data-act="diff" data-v="${v}" aria-pressed="${ui.diff===v}">${DIFF[v]}</button>`).join('')}</div>
+  <div class="seg" role="group" aria-label="Bonus- und Maluswürfel"${T('proben','kampf')}>${[-2,-1,0,1,2].map(v=>`<button data-act="bp" data-v="${v}" aria-pressed="${ui.bp===v}" title="${v>0?v+' Bonuswürfel':v<0?-v+' Maluswürfel':'Ohne'}">${v>0?'+'+v:v<0?'−'+(-v):'±0'}</button>`).join('')}</div>
+  <span class="note">Gilt für einen Wurf, danach zurück auf Regulär.</span></div>
+ <div class="pgrid"><div class="pcol">
+  <section class="psec"${T('proben')}><h3>Eigenschaften</h3><div class="cbtns">${ORDER.map(k=>{const v=final(k);return`<button class="cbtn" data-act="rollChar" data-k="${k}"${v==null?' disabled':''}><span class="abbr">${CH[k].a}</span><b>${v??'–'}</b><small>${v!=null?half(v)+' · '+fifth(v):''}</small></button>`}).join('')}</div></section>
+  <section class="psec"${T('proben')}><h3>Fertigkeiten</h3>
+   <div class="row" style="margin-bottom:8px"><div class="seg" role="group" aria-label="Filter"><button data-act="pfilter" data-v="used" aria-pressed="${filt==='used'}">Geübte</button><button data-act="pfilter" data-v="all" aria-pressed="${filt==='all'}">Alle</button></div>
+    <input type="search" id="pSearch" placeholder="Suchen …" value="${esc(ui.psearch||'')}" style="flex:1;min-width:140px" aria-label="Fertigkeit suchen"></div>
+   <div class="tablewrap"><table id="pTable"><thead><tr><th>Fertigkeit</th><th class="num">Wert</th><th class="num">½</th><th class="num">⅕</th><th class="num" title="Steigerungshäkchen">✓</th></tr></thead>
+   <tbody id="pSkills">${skills.map(k=>{const v=skillVal(k),f=splitKey(k)[0];return`<tr data-pname="${esc(skillName(k).toLowerCase())}"><td><button class="skbtn" data-act="rollSkill" data-k="${esc(k)}">${esc(skillName(k))}</button>${gainOf(k)?`<span class="tag" title="Im Spiel gesteigert">+${gainOf(k)}</span>`:''}</td><td class="num val">${v}</td><td class="num">${half(v)}</td><td class="num">${fifth(v)}</td>
+    <td class="tick">${NOTICK.includes(f)?'':`<input type="checkbox" data-tick="${esc(k)}"${p.ticks[k]?' checked':''} aria-label="Steigerungshäkchen ${esc(skillName(k))}">`}</td></tr>`}).join('')||'<tr><td colspan="5" class="note">Keine Fertigkeit gefunden.</td></tr>'}</tbody></table></div>
+   <div class="row" style="margin-top:8px"><span class="note">Cthulhu-Mythos dazugewonnen?</span><span class="stepper"><button data-act="mythos" data-d="-1" aria-label="Cthulhu-Mythos −1">−</button><b class="ammo" style="min-width:28px;text-align:center">${skillVal('mythos')}</b><button data-act="mythos" data-d="1" aria-label="Cthulhu-Mythos +1">+</button></span><span class="note">senkt die max. Stabilität</span></div></section>
+  <section class="psec"${T('proben')}><h3>Steigerungsphase</h3><p class="note" style="margin:0 0 8px">Nach einem Abenteuer: Für jede Fertigkeit mit Häkchen W100 würfeln. Liegt der Wurf über dem Wert (oder bei 96+), steigt sie um 1W10. Wer dabei 90 erreicht, gewinnt 2W6 Stabilität.</p>
+   <button class="btn small" data-act="devAsk"${ticks.length?'':' disabled'}>${DI} Steigerungsphase (${ticks.length} Häkchen)</button>${dev}
+   ${p.dev?`<ul class="devlist">${p.dev.lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`:''}</section>
+ </div><div class="pcol">
+  <section class="psec"${T('kampf')}><h3>Kampf</h3><div class="row" style="margin-bottom:10px"><button class="btn small ghost" data-act="rollSkill" data-k="ausweichen">Ausweichen (${skillVal('ausweichen')})</button><span class="note">Schadensbonus ${esc(d.db??'–')} · Bewegung ${d.mov??'–'}</span></div>
+   <div style="display:flex;flex-direction:column;gap:8px">${weapons}</div>
+   <div class="row" style="margin-top:10px"><select id="wPreset" aria-label="Waffe wählen">${PRESETS.map((w,i)=>okEra(w)?`<option value="${i}">${esc(w.name)}</option>`:'').join('')}<option value="custom">Eigene Waffe</option></select><button class="btn small ghost" data-act="wAdd">Waffe hinzufügen</button></div></section>
+  <section class="psec"${T('wuerfel')}><h3>Würfel</h3><div class="freedice"><input id="freeDice" value="${esc(ui.freeDice||'1W6')}" aria-label="Würfelausdruck"><button class="btn small" data-act="freeRoll">${DI} Würfeln</button>${['1W4','1W6','1W8','1W10','1W20','1W100'].map(x=>`<button class="btn small ghost" data-act="freeQuick" data-x="${x}">${x.slice(1)}</button>`).join('')}</div>
+   <p class="note" style="margin:6px 0 0">Ausdrücke wie 2W6+4 oder 1W3+SB (SB = Schadensbonus).</p></section>
+  <section class="psec"${T('notizen')}><h3>Notizen</h3><textarea id="pNotes" data-bind="play.notes" style="min-height:120px" placeholder="Hinweise, Namen, Orte, Verdächtige …">${esc(p.notes)}</textarea></section>
+  <section class="psec"${T('wuerfel')}><h3>Protokoll</h3>${p.log.length?`<ul class="loglist">${p.log.map(l=>`<li><time>${new Date(l.t).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</time><span>${esc(l.text)}</span></li>`).join('')}</ul><button class="linkbtn" data-act="clearLog" style="margin-top:6px">Protokoll leeren</button>`:'<p class="note">Noch keine Würfe.</p>'}</section>
+ </div></div>
+ ${renderResult()}
+ <nav class="tabbar" aria-label="Bereiche">${PTABS.map(([k,n,ic])=>`<button data-act="ptab" data-v="${k}"${(ui.ptab||'status')===k?' aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>${n}</button>`).join('')}</nav>`}
+function numIn(id){const v=parseInt(document.getElementById(id)?.value,10);return Number.isFinite(v)&&v>0?v:0}
+function weapon(id){return C.play.weapons.find(w=>w.id===id)}
+function rollDamage(w,ext){const parts=String(w.dmg||'').split('/');const out=[];let first=null;
+ try{parts.forEach((pt,i)=>{let txt,tot;if(ext){const mx=rollExpr(pt,{max:true}).total;if(w.imp){const ex=rollExpr(pt.replace(/[+-]\s*SB/i,''));tot=mx+ex.total;txt=`Maximum ${mx} + ${ex.text} = ${tot}`}else{tot=mx;txt=`Maximum ${mx}`}}else{const x=rollExpr(pt);tot=Math.max(0,x.total);txt=`${x.text} = ${tot}`}
+  if(first==null)first=Math.max(0,tot);out.push((parts.length>1?['nah','mittel','weit'][i]+': ':'')+txt)});
+  const note=ext?(w.imp?'Extremer Erfolg mit durchdringender Waffe: Maximalschaden plus ein weiterer Schadenswurf.':'Extremer Erfolg: Maximalschaden.'):'';
+  plog(`${w.name}: Schaden ${out.join(' · ')}${ext?' (extrem)':''}`);
+  ui.result={simple:true,label:`${w.name} – Schaden${parts.length>1?' (nah / mittel / weit)':''}`,total:first,text:out.join(' · '),notes:note?[note]:[]};
+ }catch(e){ui.result=null;ui.hints=[`${w.name}: ${e.message}`]}}
+
+/* ===================== Sichern & Übertragen ===================== */
+const FORMAT='coc7-investigatoren';
+function exportList(){return ui.scope==='all'?chars:[C]}
+function exportData(){const list=exportList().map(clean);return JSON.stringify({format:FORMAT,version:1,exported:new Date().toISOString(),characters:list},null,1)}
+function slug(s){return(s||'investigator').normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase().slice(0,40)||'investigator'}
+function exportName(){const d=new Date().toISOString().slice(0,10);return ui.scope==='all'?`investigatoren-${d}.json`:`${slug(C.info.name)}-${d}.json`}
+function tmsg(k,t,cls=''){ui.tmsg={k,t,cls};const el=document.getElementById('tmsg-'+k);if(el){el.textContent=t;el.className='tmsg '+cls}}
+function parseImport(text){let o;try{o=JSON.parse(String(text).trim())}catch(e){throw new Error('Das ist kein gültiges Datenformat. Kopiere die Daten vollständig, von der ersten { bis zur letzten }.')}
+ let list=Array.isArray(o)?o:o&&Array.isArray(o.characters)?o.characters:o&&o.base?[o]:null;
+ if(!list)throw new Error('In diesen Daten wurde kein Investigator gefunden.');
+ list=list.filter(c=>c&&typeof c==='object'&&c.base&&c.info);if(!list.length)throw new Error('In diesen Daten wurde kein Investigator gefunden.');return list}
+function mergeImport(list){let added=0,updated=0,same=0,first=null;
+ for(const raw of list){const c=normalize(raw);if(!c.id)c.id=newChar().id;c.updated=Number.isFinite(+raw.updated)?+raw.updated:Date.now();c.touched=true;
+  const i=chars.findIndex(x=>x.id===c.id);
+  if(i<0){chars.push(c);added++;first=first||c;persist(c)}
+  else if(c.updated>(+chars[i].updated||0)){chars[i]=c;updated++;first=first||c;persist(c)}
+  else same++}
+ chars.sort((a,b)=>b.updated-a.updated);if(first)C=first;lsWrite();
+ const parts=[];if(added)parts.push(`${added} neu`);if(updated)parts.push(`${updated} aktualisiert`);if(same)parts.push(`${same} unverändert (hier schon gleich oder neuer)`);
+ return{changed:added+updated,text:'Import: '+parts.join(', ')+'.'}}
+function doImport(text,k){try{const r=mergeImport(parseImport(text));ui.tmsg={k,t:r.text,cls:r.changed?'ok':''};renderAll();return true}catch(e){tmsg(k,e.message,'err');return false}}
+async function saveFile(){const data=exportData(),name=exportName();
+ try{if(window.claude&&claude.use){const d=await claude.use('downloads');if(d){await d.save({filename:name,data});tmsg('save',`Gespeichert als ${name}.`,'ok');return}}}catch(e){if(e&&e.code)return tmsg('save','Die Datei wurde nicht gespeichert.','err')}
+ try{const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  tmsg('save',`Gespeichert als ${name} (meist im Download-Ordner).`,'ok')}catch(e){tmsg('save','Speichern ging hier nicht. Nutze „Daten kopieren“.','err')}}
+async function loadFiles(files){files=[...(files||[])];if(!files.length)return;let all=[],bad=0;
+ for(const f of files){try{all=all.concat(parseImport(await f.text()))}catch(e){bad++}}
+ if(!all.length)return tmsg('load',files.length>1?'Keine der Dateien enthält Investigatoren-Daten.':'Diese Datei enthält keine Investigatoren-Daten.','err');
+ const r=mergeImport(all);ui.tmsg={k:'load',t:r.text+(bad?` ${bad} Datei${bad>1?'en':''} übersprungen.`:''),cls:r.changed?'ok':''};renderAll()}
+async function copyData(){const data=exportData();const n=exportList().length;
+ try{await navigator.clipboard.writeText(data);tmsg('copy',`${n===1?'Investigator':n+' Investigatoren'} kopiert. Auf dem anderen Gerät hier einfügen.`,'ok')}
+ catch(e){const ta=document.getElementById('pasteBox');ta.value=data;ta.focus();ta.select();tmsg('copy','Daten im Feld markiert – kopiere sie mit Strg/⌘ + C.')}}
+
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);ui.copied=msg}catch(e){const ta=document.getElementById('exportBox');ta.value=text;ta.focus();ta.select();ui.copied='Text markiert – kopiere ihn mit Strg/⌘ + C.'}const m=document.getElementById('copyMsg');if(m)m.textContent=ui.copied}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;const k=b.dataset.k;
+ switch(a){
+ case'go':go(+b.dataset.i);return;
+ case'new':{const c=newChar();chars.unshift(c);C=c;ui.confirmDel=false;touch();renderAll();return}
+ case'del':ui.confirmDel=true;renderHeader();return;
+ case'delNo':ui.confirmDel=false;renderHeader();return;
+ case'delYes':{const id=C.id;chars=chars.filter(c=>c.id!==id);clearTimeout(timers[id]);
+  if(store.kind==='db'){chains[id]=(chains[id]||Promise.resolve()).then(()=>store.col.doc(id).delete()).catch(()=>{})}
+  if(!chars.length)chars=[newChar()];C=chars[0];ui.confirmDel=false;lsWrite();renderAll();return}
+ case'method':if(b.dataset.m===C.method)return;if(ORDER.some(x=>C.base[x]!=null)){ui.pendingMethod=b.dataset.m;renderMain();refreshLive()}else{C.method=b.dataset.m;touch();renderAll()}return;
+ case'methodYes':C.method=ui.pendingMethod;ui.pendingMethod=null;ORDER.forEach(x=>C.base[x]=null);C.rolls={};C.eduChecks=[];touch();renderAll();return;
+ case'methodNo':ui.pendingMethod=null;renderMain();refreshLive();return;
+ case'roll':rollChar(k);ui.fresh=k;touch();renderMain();refreshLive();return;
+ case'rollAll':ORDER.forEach(rollChar);ui.fresh='all';if(C.luck[0]==null){const r=[rnd(6),rnd(6),rnd(6)];C.luckDice[0]=r;C.luck[0]=r.reduce((x,y)=>x+y)*5}touch();renderMain();refreshLive();return;
+ case'rollLuck':{const i=+b.dataset.i;const r=[rnd(6),rnd(6),rnd(6)];C.luckDice[i]=r;C.luck[i]=r.reduce((x,y)=>x+y)*5;ui.fresh='luck'+i;touch();renderMain();refreshLive();return}
+ case'cstep':{const min=TWO.includes(k)?40:15;const cur=C.base[k]==null?min:+C.base[k];C.base[k]=Math.max(min,Math.min(90,cur+ +b.dataset.d));const inp=document.getElementById('p-'+k);if(inp)inp.value=C.base[k];if(k==='EDU')C.eduChecks=[];touch();refreshLive();return}
+ case'dstep':{C.ageDed[k]=Math.max(0,(+C.ageDed[k]||0)+ +b.dataset.d);const inp=document.getElementById('d-'+k);if(inp)inp.value=C.ageDed[k];touch();refreshLive();return}
+ case'dedEven':{const B=band(C.age);const n=B.keys.length;B.keys.forEach((x,i)=>C.ageDed[x]=Math.floor(B.ded/n)+(i<B.ded%n?1:0));touch();renderMain();refreshLive();return}
+ case'eduCheck':{const B=band(C.age);const i=C.eduChecks.length;if(i>=B.checks)return;const cur=eduBefore(i);const r=rnd(100);C.eduChecks.push({roll:r,gain:r>cur?Math.min(rnd(10),99-cur):0});touch();renderMain();refreshLive();return}
+ case'eduReset':C.eduChecks=[];touch();renderMain();refreshLive();return;
+ case'pickOcc':C.occ=b.dataset.o;C.occPick={};C.occPts={};C.occAlt='';touch();renderAll();return;
+ case'pstep':{const pool=b.dataset.pool;setPts(pool,k,(+C[pool+'Pts'][k]||0)+ +b.dataset.d);const inp=document.querySelector(`input[data-pts="${pool}|${CSS.escape(k)}"]`);if(inp)inp.value=C[pool+'Pts'][k]||'';touch();refreshLive();return}
+ case'addSpec':{const fam=document.getElementById('specFam').value;const name=document.getElementById('specName').value.trim().replace(/:/g,' ');const msg=document.getElementById('specMsg');
+  if(!name){msg.textContent='Gib eine Spezialisierung ein.';return}const key=fam+':'+name;if(instances().includes(key)){msg.textContent=skillName(key)+' gibt es schon.';return}
+  C.extraSpecs.push(key);touch();renderMain();refreshLive();applySearch();return}
+ case'rmSpec':C.extraSpecs=C.extraSpecs.filter(x=>x!==k);touch();renderMain();refreshLive();applySearch();return;
+ case'suggest':{const l=backSugg(BACK.find(x=>x.k===k));let s;do{s=pick(l)}while(l.length>1&&s===C.back[k]);C.back[k]=s;document.getElementById('b-'+k).value=s;touch();refreshLive();return}
+ case'randAll':if(hasData()){ui.confirmAll=true;renderMain();refreshLive();return}randomAll();ui.fresh='all';touch();renderAll();return;
+ case'randAllYes':ui.confirmAll=false;randomAll();ui.fresh='all';touch();renderAll();return;
+ case'randAllNo':ui.confirmAll=false;renderMain();refreshLive();return;
+ case'randPerson':randomPerson();touch();renderMain();refreshLive();return;
+ case'randAge':randomAge();ui.fresh='age';touch();renderMain();refreshLive();return;
+ case'dedRand':randomDed();touch();renderMain();refreshLive();return;
+ case'eduAll':while(C.eduChecks.length<band(C.age).checks)doEduCheck();touch();renderMain();refreshLive();return;
+ case'randOcc':randomOcc();ui.fresh='occ';touch();renderAll();return;
+ case'randPicks':randomPicks(b.dataset.all!=='1');touch();renderMain();refreshLive();return;
+ case'randOccPts':randomOccPts();touch();renderMain();refreshLive();return;
+ case'rollCR':rollCR();touch();renderMain();refreshLive();return;
+ case'randPersPts':randomPersPts();touch();renderMain();refreshLive();applySearch();return;
+ case'resetPts':C[b.dataset.pool+'Pts']={};touch();renderMain();refreshLive();applySearch();return;
+ case'randBack':randomBack(b.dataset.all!=='1');touch();renderMain();refreshLive();return;
+ case'randGear':randomGear();touch();renderMain();refreshLive();return;
+ case'mode':C.mode=b.dataset.m==='play'?'play':'build';ui.result=null;ui.hints=[];ui.confirmReset=false;touch();renderAll();window.scrollTo(0,0);return;
+ case'ptab':ui.ptab=b.dataset.v;try{localStorage.setItem('coc7-ptab',ui.ptab)}catch(e){}renderPlay();window.scrollTo(0,0);return;
+ case'sheet':ui.sheet=!ui.sheet;renderMbar();return;
+ case'hmenu':ui.hmenu=!ui.hmenu;renderHeader();return;
+ case'era':{const v=b.dataset.v;if(v===era())return;if(eraConflicts(v).length){ui.eraConfirm=v;renderMain();refreshLive();return}applyEra(v);touch();renderAll();return}
+ case'eraYes':applyEra(ui.eraConfirm);ui.eraConfirm=null;touch();renderAll();return;
+ case'eraNo':ui.eraConfirm=null;renderMain();refreshLive();return;
+ case'toChars':C.mode='build';C.step=1;touch();renderAll();window.scrollTo(0,0);return;
+ case'diff':ui.diff=+b.dataset.v;renderPlay();return;
+ case'bp':ui.bp=+b.dataset.v;renderPlay();return;
+ case'rollChar':{const v=final(k);if(v==null)return;startRoll({kind:'char',label:CH[k].n+' ('+CH[k].a+')',target:v});return}
+ case'rollSkill':startRoll({kind:'skill',key:k,label:skillName(k),target:skillVal(k)});return;
+ case'luckRoll':startRoll({kind:'luck',label:'Glück',target:C.play.luck,diff:2,bp:0});return;
+ case'sanRoll':ui.sanLoss=document.getElementById('sanLoss').value;startRoll({kind:'san',label:'Stabilitätsprobe',target:C.play.san,diff:2,bp:0});return;
+ case'pushRoll':if(ui.result&&ui.result.canPush){makeRoll(ui.result.spec,true);touch();renderPlay()}return;
+ case'spendLuck':spendLuck();return;
+ case'closeResult':ui.result=null;renderPlay();return;
+ case'clearHints':ui.hints=[];renderPlay();return;
+ case'pDmg':{const n=numIn('pHp');if(!n)return;ui.hints=applyDamage(n,'Schaden');touch();renderPlay();return}
+ case'pHeal':{const n=numIn('pHp');if(!n)return;heal(n,'Heilung');touch();renderPlay();return}
+ case'pFirstAid':heal(1,'Erste Hilfe');if(C.play.cond.dying)ui.hints=['Erste Hilfe stabilisiert einen Sterbenden vorübergehend; danach ist eine Medizin-Probe nötig.'];touch();renderPlay();return;
+ case'pMedicine':{const x=rollExpr('1W3');heal(x.total,'Medizin ('+x.text+')');touch();renderPlay();return}
+ case'pSanLoss':{const n=numIn('pSan');if(!n)return;ui.hints=applySanLoss(n,'Stabilitätsverlust');touch();renderPlay();return}
+ case'pSanGain':{const n=numIn('pSan');if(!n)return;const p=C.play;p.san=Math.min(sanMax(),p.san+n);plog(`Stabilität +${n} (jetzt ${p.san})`);touch();renderPlay();return}
+ case'newDay':{const p=C.play;p.sanDayStart=p.san;p.sanToday=0;plog(`Neuer Tag: Stabilität zu Tagesbeginn ${p.san}`);touch();renderPlay();return}
+ case'pMpSpend':{const n=numIn('pMp');if(!n)return;const p=C.play;if(n>p.mp){const miss=n-p.mp;p.mp=0;p.hp=Math.max(0,p.hp-miss);ui.hints=[`Es fehlten ${miss} Magiepunkte – sie wurden mit Trefferpunkten bezahlt.`];plog(`${n} MP ausgegeben, ${miss} davon als TP`)}else{p.mp-=n;plog(`${n} MP ausgegeben (jetzt ${p.mp})`)}touch();renderPlay();return}
+ case'pMpGain':{const n=numIn('pMp');if(!n)return;const p=C.play;p.mp=Math.min(mpMax(),p.mp+n);plog(`MP +${n} (jetzt ${p.mp})`);touch();renderPlay();return}
+ case'pLuckSpend':{const n=numIn('pLuck');if(!n)return;const p=C.play;p.luck=Math.max(0,p.luck-n);plog(`${n} Glück ausgegeben (jetzt ${p.luck})`);touch();renderPlay();return}
+ case'cond':{const p=C.play;p.cond[k]=!p.cond[k];plog(`${COND.find(c=>c[0]===k)[1]}: ${p.cond[k]?'ja':'aufgehoben'}`);touch();renderPlay();return}
+ case'pfilter':ui.pfilter=b.dataset.v;renderPlay();return;
+ case'mythos':{const p=C.play;p.gain.mythos=Math.max(0,(+p.gain.mythos||0)+ +b.dataset.d);if(!p.gain.mythos)delete p.gain.mythos;p.san=Math.min(p.san,sanMax());plog(`Cthulhu-Mythos jetzt ${skillVal('mythos')}`);touch();renderPlay();return}
+ case'devAsk':ui.devConfirm=true;renderPlay();return;
+ case'devCancel':ui.devConfirm=false;renderPlay();return;
+ case'devRun':{const cb=document.getElementById('devLuck');devPhase(cb?cb.checked:true);ui.devConfirm=false;touch();renderPlay();return}
+ case'resetPlay':ui.confirmReset=true;renderPlay();return;
+ case'resetNo':ui.confirmReset=false;renderPlay();return;
+ case'resetYes':{const keep={weapons:C.play.weapons,notes:C.play.notes};C.play=keep;ensurePlay();plog('Spielwerte zurückgesetzt');ui.confirmReset=false;ui.result=null;ui.hints=[];touch();renderPlay();return}
+ case'wEdit':ui.wedit=ui.wedit===b.dataset.id?null:b.dataset.id;renderPlay();return;
+ case'wDel':C.play.weapons=C.play.weapons.filter(w=>w.id!==b.dataset.id);ui.wedit=null;touch();renderPlay();return;
+ case'wAdd':{const v=document.getElementById('wPreset').value;const w=newWeapon(v==='custom'?{name:'Neue Waffe',skill:'nahkampf:Handgemenge',dmg:'1W6+SB',imp:false,range:'Berührung',rate:'1',ammoMax:0,malf:0}:PRESETS[+v]);C.play.weapons.push(w);if(v==='custom')ui.wedit=w.id;touch();renderPlay();return}
+ case'wReload':{const w=weapon(b.dataset.id);if(!w)return;w.ammo=w.ammoMax;plog(`${w.name} nachgeladen (${w.ammo})`);touch();renderPlay();return}
+ case'wAtk':{const w=weapon(b.dataset.id);if(!w)return;if(w.ammoMax>0){if(w.ammo<=0){ui.hints=[`${w.name}: keine Munition mehr – erst nachladen.`];renderPlay();return}w.ammo--}
+  startRoll({kind:'attack',key:w.skill,weapon:w.id,label:`${w.name} – Angriff`,target:skillVal(w.skill),malf:w.malf||0});return}
+ case'wDmg':{const w=weapon(b.dataset.id);if(!w)return;rollDamage(w,b.dataset.ext==='1');touch();renderPlay();return}
+ case'freeQuick':document.getElementById('freeDice').value=b.dataset.x;/* fallthrough */
+ case'freeRoll':{const e=document.getElementById('freeDice').value.trim();ui.freeDice=e;try{const x=rollExpr(e);ui.result={simple:true,label:'Würfel: '+e,total:x.total,text:x.text,notes:[]};plog(`${e}: ${x.text} = ${x.total}`);touch()}catch(err){ui.hints=[err.message];ui.result=null}renderPlay();return}
+ case'clearLog':C.play.log=[];touch();renderPlay();return;
+ case'copyText':copy(sheetText(),'Bogen kopiert.');return;
+ case'transfer':ui.transfer=!ui.transfer;ui.tmsg=null;renderHeader();renderTransfer();return;
+ case'openTransfer':ui.transfer=true;ui.tmsg=null;renderHeader();renderTransfer();document.getElementById('transfer').scrollIntoView({block:'start'});return;
+ case'saveFile':saveFile();return;
+ case'copyData':copyData();return;
+ case'importPaste':{const box=document.getElementById('pasteBox');if(!box.value.trim()){tmsg('paste','Füge zuerst kopierte Daten in das Feld ein.','err');return}doImport(box.value,'paste');return}
+ }});
+
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='skillSearch'){ui.search=t.value;applySearch();return}
+ if(t.id==='pSearch'){ui.psearch=t.value;const q=t.value.trim().toLowerCase();document.querySelectorAll('#pSkills tr[data-pname]').forEach(r=>r.hidden=!!q&&!r.dataset.pname.includes(q));return}
+ if(t.id==='sanLoss'){ui.sanLoss=t.value;return}
+ if(t.id==='freeDice'){ui.freeDice=t.value;return}
+ if(t.dataset.w&&t.type!=='checkbox'&&t.tagName!=='SELECT'){const[id,f]=t.dataset.w.split('|');const w=weapon(id);if(!w)return;if(f==='ammoMax'||f==='malf'){w[f]=Math.max(0,parseInt(t.value,10)||0);if(f==='ammoMax')w.ammo=Math.min(w.ammo,w.ammoMax)}else w[f]=t.value;touch();return}
+ if(t.dataset.bind&&!t.dataset.rr){setPath(C,t.dataset.bind,t.dataset.num!=null?(+t.value||0):t.value);touch();refreshLive();return}
+ if(t.dataset.char){const k=t.dataset.char;C.base[k]=t.value===''?null:Math.max(0,Math.min(99,parseInt(t.value)||0));delete C.rolls[k];if(k==='EDU')C.eduChecks=[];touch();refreshLive();return}
+ if(t.dataset.luck!=null){const i=+t.dataset.luck;C.luck[i]=t.value===''?null:Math.max(0,Math.min(99,parseInt(t.value)||0));C.luckDice[i]=null;touch();refreshLive();return}
+ if(t.dataset.ded){C.ageDed[t.dataset.ded]=Math.max(0,parseInt(t.value)||0);touch();refreshLive();return}
+ if(t.dataset.pts){const[pool,...rest]=t.dataset.pts.split('|');setPts(pool,rest.join('|'),t.value);touch();refreshLive();return}
+ if(t.dataset.spec){const[i,j,fam]=t.dataset.spec.split('|');C.occPick[i]=C.occPick[i]||[];C.occPick[i][+j]=fam+':'+t.value.trim().replace(/:/g,' ');touch();refreshLive();return}
+});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset.rr){let v=parseInt(t.value)||25;v=Math.max(15,Math.min(89,v));C.age=v;touch();renderMain();refreshLive();return}
+ if(t.dataset.key){C.keyConn=t.dataset.key;touch();return}
+ if(t.name==='tscope'){ui.scope=t.value;ui.tmsg=null;return}
+ if(t.dataset.tick){C.play.ticks[t.dataset.tick]=t.checked;if(!t.checked)delete C.play.ticks[t.dataset.tick];touch();renderPlay();return}
+ if(t.dataset.w&&(t.type==='checkbox'||t.tagName==='SELECT')){const[id,f]=t.dataset.w.split('|');const w=weapon(id);if(!w)return;w[f]=t.type==='checkbox'?t.checked:t.value;touch();return}
+ if(t.id==='devLuck'){ui.devLuck=t.checked;return}
+ if(t.id==='fileIn'){loadFiles(t.files).finally(()=>{t.value=''});return}
+ const s=t.dataset.sel;if(!s)return;
+ if(s==='char'){C=chars.find(c=>c.id===t.value)||C;ui.confirmDel=false;ui.search='';renderAll();return}
+ if(s==='arr'){C.base[t.dataset.k]=t.value===''?null:+t.value;if(t.dataset.k==='EDU')C.eduChecks=[];touch();renderMain();refreshLive();return}
+ if(s==='occ'){C.occ=t.value;C.occPick={};C.occPts={};C.occAlt='';touch();renderAll();return}
+ if(s==='occAlt'){C.occAlt=t.value;touch();renderMain();refreshLive();return}
+ if(s==='pick'){const i=t.dataset.i,j=+t.dataset.j;C.occPick[i]=C.occPick[i]||[];const v=t.value;C.occPick[i][j]=v.endsWith(':*')?v.slice(0,-1):v;pruneOcc();touch();renderMain();refreshLive();return}
+});
+
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{const z=e.target.closest&&e.target.closest('#dropZone');if(!z)return;e.preventDefault();z.classList.add('over')}));
+document.addEventListener('dragleave',e=>{const z=e.target.closest&&e.target.closest('#dropZone');if(z&&!z.contains(e.relatedTarget))z.classList.remove('over')});
+document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('#dropZone');if(!z)return;e.preventDefault();z.classList.remove('over');loadFiles(e.dataTransfer.files)});
+
+setStatus('Wird geladen …');
+renderAll();
+initStore();
+</script>
